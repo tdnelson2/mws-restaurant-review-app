@@ -3,6 +3,13 @@ let restaurants,
   cuisines
 var map
 var markers = []
+
+/**
+ * New thumb images are served according to the follwing criteria:
+ ** - Breakpoints
+ ** - Mid-point between breakpoints
+ ** - As needed to ensure img width in UI won't exceed width provided
+ */
 const thumbSrcset = [
   { vpWidth: 1850, width2x: 624, width1x: 312 },
   { vpWidth: 1650, width2x: 460, width1x: 230 },
@@ -172,14 +179,17 @@ createRestaurantHTML = (restaurant) => {
   const extension = img.split('.').slice(-1)[0];
   const srcsetImgs = thumbSrcset.slice(0, -1);
   for (const mg of srcsetImgs) {
-    pictureEl.append(createSourceEl(imgUrl, extension, mg.width1x, mg.width2x, mg.vpWidth, 'min-width'));
+    pictureEl.append(
+      createSourceEl(imgUrl, extension, mg.width1x, mg.width2x, mg.vpWidth, 'min-width')
+      );
   }
 
   const imgEl = document.createElement('img');
   imgEl.className = 'restaurant-img';
-  imgEl.alt = 'A picture of something';
+  imgEl.alt = `A photo showing the restaurant named "${restaurant.name}"`;
   imgEl.src = buildImgUrl(imgUrl, extension, thumbSrcset[0].width2x);
-  addSrcset(imgEl, imgUrl, extension, thumbSrcset.slice(-1)[0].width1x, thumbSrcset.slice(-1)[0].width2x);
+  const fallback = thumbSrcset.slice(-1)[0];
+  addSrcset(imgEl, imgUrl, extension, fallback.width1x, fallback.width2x);
 
   pictureEl.append(imgEl);
 
