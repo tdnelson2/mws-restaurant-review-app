@@ -3,6 +3,17 @@ let restaurants,
   cuisines
 var map
 var markers = []
+const thumbSrcset = [
+  { vpWidth: 1850, width2x: 624, width1x: 312 },
+  { vpWidth: 1650, width2x: 460, width1x: 230 },
+  { vpWidth: 1450, width2x: 624, width1x: 312 },
+  { vpWidth: 1250, width2x: 522, width1x: 261 },
+  { vpWidth: 1075, width2x: 624, width1x: 312 },
+  { vpWidth: 900,  width2x: 508, width1x: 254 },
+  { vpWidth: 740,  width2x: 682, width1x: 341 },
+  { vpWidth: 580,  width2x: 522, width1x: 261 },
+  { vpWidth: 450,  width2x: 910, width1x: 460 },
+  { vpWidth: 320,  width2x: 652, width1x: 326 }]
 
 /**
  * Fetch neighborhoods and cuisines as soon as the page is loaded.
@@ -138,10 +149,41 @@ fillRestaurantsHTML = (restaurants = self.restaurants) => {
 createRestaurantHTML = (restaurant) => {
   const li = document.createElement('li');
 
-  const image = document.createElement('img');
-  image.className = 'restaurant-img';
-  image.src = DBHelper.imageUrlForRestaurant(restaurant);
-  li.append(image);
+  const buildImgUrl = (name, extension, suffix) => {
+    return `${name}-${suffix}w.${extension}`
+  }
+
+  const addSrcset = (el, name, extension, width1x, width2x) => {
+    el.setAttribute('srcset', `${buildImgUrl(name, extension, width2x)} 2x, `+
+                              `${buildImgUrl(name, extension, width1x)} 1x`);
+  }
+
+  const createSourceEl = (name, extension, width1x, width2x, vpWidth, mediaQuery) => {
+    const source = document.createElement('source');
+    source.setAttribute('media', `(${mediaQuery}: ${vpWidth}px)`);
+    addSrcset(source, name, extension, width1x, width2x);
+    return source;
+  }
+
+  const pictureEl = document.createElement('picture');
+
+  const img = DBHelper.imageUrlForRestaurant(restaurant);
+  const imgUrl = img.split('.').slice(0, -1).join();
+  const extension = img.split('.').slice(-1)[0];
+  const srcsetImgs = thumbSrcset.slice(0, -1);
+  for (const mg of srcsetImgs) {
+    pictureEl.append(createSourceEl(imgUrl, extension, mg.width1x, mg.width2x, mg.vpWidth, 'min-width'));
+  }
+
+  const imgEl = document.createElement('img');
+  imgEl.className = 'restaurant-img';
+  imgEl.alt = 'A picture of something';
+  imgEl.src = buildImgUrl(imgUrl, extension, thumbSrcset[0].width2x);
+  addSrcset(imgEl, imgUrl, extension, thumbSrcset.slice(-1)[0].width1x, thumbSrcset.slice(-1)[0].width2x);
+
+  pictureEl.append(imgEl);
+
+  li.append(pictureEl);
 
   const name = document.createElement('h1');
   name.innerHTML = restaurant.name;
