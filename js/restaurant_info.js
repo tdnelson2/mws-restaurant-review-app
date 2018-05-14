@@ -1,5 +1,23 @@
 let restaurant;
 var map;
+/**
+ * New thumb images are served according to the follwing criteria:
+ ** - Breakpoints
+ ** - Mid-point between breakpoints
+ ** - As needed to ensure img width in UI won't exceed width provided
+ */
+const restaurantImgSizes = [
+  { vpWidth: 2240, width1x: 615, width2x: 1230 },
+  { vpWidth: 1920, width1x: 539, width2x: 1078 },
+  { vpWidth: 1585, width1x: 455, width2x: 910 },
+  { vpWidth: 1250, width1x: 372, width2x: 744 },
+  { vpWidth: 1075, width1x: 584, width2x: 1168 },
+  { vpWidth: 900,  width1x: 498, width2x: 996 },
+  { vpWidth: 740,  width1x: 425, width2x: 850 },
+  { vpWidth: 580,  width1x: 345, width2x: 690 },
+  { vpWidth: 490,  width1x: 539, width2x: 1078 },
+  { vpWidth: 400,  width1x: 455, width2x: 910 },
+  { vpWidth: 320,  width1x: 360, width2x: 720 } ]
 
 /**
  * Initialize Google map, called from HTML.
@@ -55,9 +73,10 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
   const address = document.getElementById('restaurant-address');
   address.innerHTML = restaurant.address;
 
-  const image = document.getElementById('restaurant-img');
-  image.className = 'restaurant-img'
-  image.src = DBHelper.imageUrlForRestaurant(restaurant);
+  const imageContainer = document.getElementById('restaurant-img-container');
+  // image.className = 'restaurant-img'
+  // image.src = DBHelper.imageUrlForRestaurant(restaurant);
+  imageContainer.append(buildPictureEl(restaurant, restaurantImgSizes));
 
   const cuisine = document.getElementById('restaurant-cuisine');
   cuisine.innerHTML = restaurant.cuisine_type;
@@ -161,3 +180,44 @@ getParameterByName = (name, url) => {
     return '';
   return decodeURIComponent(results[2].replace(/\+/g, ' '));
 }
+
+/**
+ * Adjust restaurant name width so elipses is added correctly.
+ */
+setRestaurantNameWidth = () => {
+  document.getElementById('restaurant-name').style.width = `${window.innerWidth-20}px`;
+}
+
+setRestaurantNameWidth();
+
+window.addEventListener('resize', () => {
+  setRestaurantNameWidth();
+});
+
+
+/**
+ * Listen for when user clicks "More details".
+ */
+calcDestination = () => (window.innerHeight - 201) - window.scrollY;
+isMobile = () => window.innerWidth < 900;
+
+document.getElementById('restaurant-name-container').addEventListener('click', () => {
+  if (!isMobile()) return;
+  window.scrollBy({ "behavior": "smooth", "top": calcDestination() });
+});
+
+window.addEventListener('scroll', () => {
+  if (!isMobile()) return;
+  const detailsLinkEl = document.getElementById('restaurant-details-link');
+  const nameEl = document.getElementById('restaurant-name');
+  const pos = calcDestination();
+  if (pos <= 0) {
+    detailsLinkEl.style.display = 'none';
+    nameEl.style.marginBottom = '15px';
+    // nameEl.style.fontSize = '20pt';
+  } else {
+    // nameEl.style.fontSize = '15pt';
+    nameEl.style.marginBottom = '5px';
+    detailsLinkEl.style.display = 'block';
+  }
+});

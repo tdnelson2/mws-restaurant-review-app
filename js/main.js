@@ -156,44 +156,7 @@ fillRestaurantsHTML = (restaurants = self.restaurants) => {
 createRestaurantHTML = (restaurant) => {
   const li = document.createElement('li');
 
-  const buildImgUrl = (name, extension, suffix) => {
-    return `${name}-${suffix}w.${extension}`
-  }
-
-  const addSrcset = (el, name, extension, width1x, width2x) => {
-    el.setAttribute('srcset', `${buildImgUrl(name, extension, width2x)} 2x, `+
-                              `${buildImgUrl(name, extension, width1x)} 1x`);
-  }
-
-  const createSourceEl = (name, extension, width1x, width2x, vpWidth, mediaQuery) => {
-    const source = document.createElement('source');
-    source.setAttribute('media', `(${mediaQuery}: ${vpWidth}px)`);
-    addSrcset(source, name, extension, width1x, width2x);
-    return source;
-  }
-
-  const pictureEl = document.createElement('picture');
-
-  const img = DBHelper.imageUrlForRestaurant(restaurant);
-  const imgUrl = img.split('.').slice(0, -1).join();
-  const extension = img.split('.').slice(-1)[0];
-  const srcsetImgs = thumbSrcset.slice(0, -1);
-  for (const mg of srcsetImgs) {
-    pictureEl.append(
-      createSourceEl(imgUrl, extension, mg.width1x, mg.width2x, mg.vpWidth, 'min-width')
-      );
-  }
-
-  const imgEl = document.createElement('img');
-  imgEl.className = 'restaurant-img';
-  imgEl.alt = `A photo showing the restaurant named "${restaurant.name}"`;
-  imgEl.src = buildImgUrl(imgUrl, extension, thumbSrcset[0].width2x);
-  const fallback = thumbSrcset.slice(-1)[0];
-  addSrcset(imgEl, imgUrl, extension, fallback.width1x, fallback.width2x);
-
-  pictureEl.append(imgEl);
-
-  li.append(pictureEl);
+  li.append(buildPictureEl(restaurant, thumbSrcset));
 
   const name = document.createElement('h1');
   name.innerHTML = restaurant.name;
