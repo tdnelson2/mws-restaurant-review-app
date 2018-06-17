@@ -10,7 +10,7 @@ var markers = []
  ** - Mid-point between breakpoints
  ** - As needed to ensure img width in UI won't exceed width provided
  */
-const thumbSrcset = [
+const restaurantThumbs = [
   { vpWidth: 1850, width2x: 624, width1x: 312 },
   { vpWidth: 1650, width2x: 460, width1x: 230 },
   { vpWidth: 1450, width2x: 624, width1x: 312 },
@@ -48,13 +48,7 @@ fetchNeighborhoods = () => {
  * Set neighborhoods HTML.
  */
 fillNeighborhoodsHTML = (neighborhoods = self.neighborhoods) => {
-  const select = document.getElementById('neighborhoods-select');
-  neighborhoods.forEach(neighborhood => {
-    const option = document.createElement('option');
-    option.innerHTML = neighborhood;
-    option.value = neighborhood;
-    select.append(option);
-  });
+  fillCustomSelectBox(neighborhoods, 'neighborhoods-select', 'neighborhoods-select-button', 'Filter results by neighborhoods');
 }
 
 /**
@@ -75,14 +69,7 @@ fetchCuisines = () => {
  * Set cuisines HTML.
  */
 fillCuisinesHTML = (cuisines = self.cuisines) => {
-  const select = document.getElementById('cuisines-select');
-
-  cuisines.forEach(cuisine => {
-    const option = document.createElement('option');
-    option.innerHTML = cuisine;
-    option.value = cuisine;
-    select.append(option);
-  });
+  fillCustomSelectBox(cuisines, 'cuisines-select', 'cuisines-select-button', 'Filter results by cuisines');
 }
 
 /**
@@ -105,14 +92,8 @@ window.initMap = () => {
  * Update page and map for current restaurants.
  */
 updateRestaurants = () => {
-  const cSelect = document.getElementById('cuisines-select');
-  const nSelect = document.getElementById('neighborhoods-select');
-
-  const cIndex = cSelect.selectedIndex;
-  const nIndex = nSelect.selectedIndex;
-
-  const cuisine = cSelect[cIndex].value;
-  const neighborhood = nSelect[nIndex].value;
+  const cuisine = document.getElementById('cuisines-select-button').getAttribute('value');
+  const neighborhood = document.getElementById('neighborhoods-select-button').getAttribute('value');
 
   DBHelper.fetchRestaurantByCuisineAndNeighborhood(cuisine, neighborhood, (error, restaurants) => {
     if (error) { // Got an error!
@@ -144,8 +125,10 @@ resetRestaurants = (restaurants) => {
  */
 fillRestaurantsHTML = (restaurants = self.restaurants) => {
   const ul = document.getElementById('restaurants-list');
+  let i = 0;
   restaurants.forEach(restaurant => {
-    ul.append(createRestaurantHTML(restaurant));
+    ul.append(createRestaurantHTML(restaurant, i));
+    i += 1;
   });
   addMarkersToMap();
 }
@@ -153,12 +136,15 @@ fillRestaurantsHTML = (restaurants = self.restaurants) => {
 /**
  * Create restaurant HTML.
  */
-createRestaurantHTML = (restaurant) => {
+createRestaurantHTML = (restaurant, i) => {
   const li = document.createElement('li');
 
-  li.append(buildPictureEl(restaurant, thumbSrcset));
+  li.append(buildPictureEl(restaurant, restaurantThumbs));
+  li.setAttribute('aria-labelledby', 'restaurant-list-items');
 
-  const name = document.createElement('h1');
+  const nameid = `restaurant-name-${i}`;
+  const name = document.createElement('h4');
+  name.setAttribute('id', nameid);
   name.innerHTML = restaurant.name;
   li.append(name);
 
@@ -170,9 +156,11 @@ createRestaurantHTML = (restaurant) => {
   address.innerHTML = restaurant.address;
   li.append(address);
 
-  const more = document.createElement('a');
+  const more = document.createElement('button');
   more.innerHTML = 'View Details';
-  more.href = DBHelper.urlForRestaurant(restaurant);
+  more.setAttribute('aria-labelledby', `restaurant-list-items ${nameid}`);
+  more.setAttribute('onclick', `location.href='${DBHelper.urlForRestaurant(restaurant)}';`);
+  more.setAttribute('tabindex', '0');
   li.append(more)
 
   return li

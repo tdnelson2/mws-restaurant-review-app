@@ -1,5 +1,6 @@
 let restaurant;
 var map;
+
 /**
  * New thumb images are served according to the follwing criteria:
  ** - Breakpoints
@@ -114,7 +115,7 @@ fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hours) => 
  */
 fillReviewsHTML = (reviews = self.restaurant.reviews) => {
   const container = document.getElementById('reviews-container');
-  const title = document.createElement('h2');
+  const title = document.createElement('h3');
   title.innerHTML = 'Reviews';
   container.appendChild(title);
 
@@ -182,6 +183,20 @@ getParameterByName = (name, url) => {
 }
 
 /**
+ * Handle the 'Skip to main content' link
+ */
+skipToMainContent = () => {
+  const skipEl = document.getElementById('skip-to-main');
+  if (window.innerWidth < 900) {
+    scrollToMainContent();
+  } else {
+    const nameEl = document.getElementById('restaurant-name-container');
+    nameEl.focus();
+  }
+}
+
+
+/**
  * Adjust restaurant name width so elipses is added correctly.
  */
 setRestaurantNameWidth = () => {
@@ -198,25 +213,28 @@ window.addEventListener('resize', () => {
 /**
  * Listen for when user clicks "More details".
  */
-calcDestination = () => (window.innerHeight - 201) - window.scrollY;
+calcDestination = () => (window.innerHeight - 209) - window.scrollY;
 isMobile = () => window.innerWidth < 900;
+
+scrollToMainContent = () => {
+  window.scrollBy({ "behavior": "smooth", "top": calcDestination() });
+}
 
 document.getElementById('restaurant-name-container').addEventListener('click', () => {
   if (!isMobile()) return;
-  window.scrollBy({ "behavior": "smooth", "top": calcDestination() });
+  scrollToMainContent()
 });
 
 window.addEventListener('scroll', () => {
   if (!isMobile()) return;
   const detailsLinkEl = document.getElementById('restaurant-details-link');
-  const nameEl = document.getElementById('restaurant-name');
+  const nameEl = document.getElementById('restaurant-name-container');
   const pos = calcDestination();
   if (pos <= 0) {
     detailsLinkEl.style.display = 'none';
     nameEl.style.marginBottom = '15px';
-    // nameEl.style.fontSize = '20pt';
+    nameEl.focus();
   } else {
-    // nameEl.style.fontSize = '15pt';
     nameEl.style.marginBottom = '5px';
     detailsLinkEl.style.display = 'block';
   }
