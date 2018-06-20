@@ -75,8 +75,6 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
   address.innerHTML = restaurant.address;
 
   const imageContainer = document.getElementById('restaurant-img-container');
-  // image.className = 'restaurant-img'
-  // image.src = DBHelper.imageUrlForRestaurant(restaurant);
   imageContainer.append(buildPictureEl(restaurant, restaurantImgSizes));
 
   const cuisine = document.getElementById('restaurant-cuisine');
@@ -183,20 +181,6 @@ getParameterByName = (name, url) => {
 }
 
 /**
- * Handle the 'Skip to main content' link
- */
-skipToMainContent = () => {
-  const skipEl = document.getElementById('skip-to-main');
-  if (window.innerWidth < 900) {
-    scrollToMainContent();
-  } else {
-    const nameEl = document.getElementById('restaurant-name-container');
-    nameEl.focus();
-  }
-}
-
-
-/**
  * Adjust restaurant name width so elipses is added correctly.
  */
 setRestaurantNameWidth = () => {
@@ -209,33 +193,22 @@ window.addEventListener('resize', () => {
   setRestaurantNameWidth();
 });
 
-
 /**
  * Listen for when user clicks "More details".
  */
-calcDestination = () => (window.innerHeight - 209) - window.scrollY;
-isMobile = () => window.innerWidth < 900;
+const offset = 209;
+const maxMobileRes = 900;
+const buttonScrollThreshold = 15;
+const restaurantNameEl = document.getElementById('restaurant-name-container');
+const scrollButton = new ScrollButton(restaurantNameEl, 'as-button', maxMobileRes, buttonScrollThreshold, offset);
 
-scrollToMainContent = () => {
-  window.scrollBy({ "behavior": "smooth", "top": calcDestination() });
-}
-
-document.getElementById('restaurant-name-container').addEventListener('click', () => {
-  if (!isMobile()) return;
-  scrollToMainContent()
-});
-
-window.addEventListener('scroll', () => {
-  if (!isMobile()) return;
-  const detailsLinkEl = document.getElementById('restaurant-details-link');
-  const nameEl = document.getElementById('restaurant-name-container');
-  const pos = calcDestination();
-  if (pos <= 0) {
-    detailsLinkEl.style.display = 'none';
-    nameEl.style.marginBottom = '15px';
-    nameEl.focus();
+/**
+ * Handle accessibility button "Skip to main content".
+ */
+skipToMainContent = () => {
+  if (window.innerWidth < maxMobileRes) {
+    scrollButton.executeScroll()
   } else {
-    nameEl.style.marginBottom = '5px';
-    detailsLinkEl.style.display = 'block';
+    restaurantNameEl.focus();
   }
-});
+}

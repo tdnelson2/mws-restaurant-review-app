@@ -19,17 +19,6 @@
   top: 0;
 }
 
-.link {
-  padding: 0;
-  margin: 0;
-  font-size: 10pt;
-  border: 0;
-  color: #8f1f08;
-  background: transparent;
-  text-decoration: underline;
-  cursor: pointer;
-}
-
 body,
 td,
 th,
@@ -90,7 +79,7 @@ hgroup,
 menu,
 nav,
 section,
-#restaurant-details-link {
+#restaurant-details-faux-link {
   display: block;
 }
 
@@ -163,7 +152,7 @@ nav h1 a.active {
 
 /* Add a color to all links inside the list */
 #breadcrumb li a,
-#restaurant-details-link {
+#restaurant-details-faux-link {
   color: #0275d8;
   text-decoration: none;
 }
@@ -174,7 +163,7 @@ nav h1 a.active {
 
 /* Add a color on mouse-over */
 #breadcrumb li a:hover,
-#restaurant-details-link:hover {
+#restaurant-details-faux-link:hover {
   color: #01447e;
   text-decoration: underline;
 }
@@ -399,10 +388,14 @@ nav h1 a.active {
   cursor: pointer;
 }
 
+#restaurant-container .as-button:hover,
+#restaurant-container .as-button:active,
+#restaurant-container .as-button:focus,
+#restaurant-container .as-button:focus-within,
 #restaurant-name-container:focus,
 #restaurant-name-container:focus-within {
   outline: none;
-  border-left: 15px solid #8e0048;  /*padding: 0 15px;*/
+  border-left: 15px solid #8e0048;
 }
 
 #restaurant-name {
@@ -416,15 +409,44 @@ nav h1 a.active {
   font-weight: 200;
   letter-spacing: 0;
   padding-top: 5px;
-  margin-bottom: 5px;
+  margin-bottom: 15px;
   text-transform: uppercase;
   line-height: 1.5;
   height: 30px;
 }
 
-#restaurant-details-link {
-  margin-bottom: 15px;
+#restaurant-container .as-button {
+  margin-bottom: 0;
+  border-left: 0 solid #8e0048;
+  -webkit-transition: all 0.5s ease;
+  -moz-transition: all 0.5s ease;
+  -o-transition: all 0.5s ease;
+  transition: all 0.5s ease;
 }
+
+#restaurant-container .as-button #restaurant-name {
+  margin-bottom: 0;
+}
+
+#restaurant-details-faux-link {
+  color: #0675d8;
+  display: none;
+  margin: 8px 0;
+}
+
+#restaurant-details-faux-link:hover {
+  color: #0675d8;
+  text-decoration: underline;
+}
+
+#restaurant-container .as-button #restaurant-details-faux-link {
+  display: block;
+}
+
+/*const elOnAttrs = [['role', 'button'], ['class', 'as-button'], ['style', 'margin-bottom: 5px;']];
+const elOffAttrs = [['style', 'margin-bottom: 15px;']];
+const linkOnAttrs = [['style', 'display: block;']];
+const linkOffAttrs = [['style', 'display: none;']];*/
 
 #restaurant-img-container .restaurant-img {
   width: 100%;
@@ -608,7 +630,7 @@ nav h1 a.active {
     cursor: auto;
   }
 
-  #restaurant-details-link {
+  #restaurant-details-faux-link {
     display: none;
   }
 

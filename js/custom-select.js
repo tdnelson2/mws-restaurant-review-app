@@ -23,7 +23,6 @@ function nextId() {
 }
 
 /**
- * @constructor
  * Implements a minimal custom select button: a button with a list of options which pops up whent the button is focused
  * Use arrow keys or mouse to choose from available options.
  * @param {Element} el The text field element to decorate.
