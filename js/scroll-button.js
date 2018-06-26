@@ -6,17 +6,17 @@ const VK_TAB        = 9;
 
 /**
  * Implements a button whose action is to scroll the page by a distance of a full view height.
- * After the scoll is complete the role switches from a button to a regular element 
+ * After the scroll is complete the role switches from a button to a regular element
  * but focus is maintained for accessibility purposes.
  * @param {Element} el The element to decorate.
- * @param {String} asButtonClass The css class to add when element is a button.
- * @param {Integer} maxEnableWidth The max width in which element is a button.
+ * @param {String} asButtonClass The css class to add when the element is a button.
+ * @param {Integer} maxEnableWidth The max width in which the element is a button.
  * @param {Integer} verticalScrollThreshold The max amount of vertical scrolling before element is no longer a button.
- * @param {Integer} scrollOffset The amount of overlap to maintain when the scroll button is pressed.
+ * @param {Integer} scrollOffset The amount to subtract from the full view height scroll.
  */
 class ScrollButton {
-  constructor(el, 
-              asButtonClass, 
+  constructor(el,
+              asButtonClass,
               maxEnableWidth=10000,
               verticalScrollThreshold=10000,
               scrollOffset=0) {
@@ -86,7 +86,7 @@ class ScrollButton {
     }
   }
 
-  executeScroll() { 
+  executeScroll() {
     this.buttonWasPressed = true;
     window.scrollBy({ "behavior": "smooth", "top": this.calcDestination() });
   }

@@ -21,7 +21,6 @@ const restaurantThumbs = [
   { vpWidth: 580,  width2x: 522, width1x: 261 },
   { vpWidth: 450,  width2x: 910, width1x: 460 },
   { vpWidth: 320,  width2x: 652, width1x: 326 }]
-
 /**
  * Fetch neighborhoods and cuisines as soon as the page is loaded.
  */

@@ -19,7 +19,6 @@ const restaurantImgSizes = [
   { vpWidth: 490,  width1x: 539, width2x: 1078 },
   { vpWidth: 400,  width1x: 455, width2x: 910 },
   { vpWidth: 320,  width1x: 360, width2x: 720 } ]
-
 /**
  * Initialize Google map, called from HTML.
  */
@@ -157,7 +156,7 @@ createReviewHTML = (review) => {
 /**
  * Add restaurant name to the breadcrumb navigation menu
  */
-fillBreadcrumb = (restaurant=self.restaurant) => {
+fillBreadcrumb = (restaurant = self.restaurant) => {
   const breadcrumb = document.getElementById('breadcrumb');
   const li = document.createElement('li');
   li.innerHTML = restaurant.name;
