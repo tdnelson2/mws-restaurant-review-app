@@ -47,10 +47,6 @@ module.exports = function(grunt) {
             { width: 1230, quality, suffix },]
         },
 
-        /*
-        You don't need to change this part if you don't change
-        the directory structure.
-        */
         files: [{
           expand: true,
           src: ['*.{gif,jpg,png}'],
@@ -58,6 +54,16 @@ module.exports = function(grunt) {
           dest: 'img/'
         }]
       }
+    },
+
+    /* Add a placeholder image */
+    copy: {
+      main: {
+        expand: true,
+        cwd: 'img_src',
+        src: 'na.svg',
+        dest: 'img/',
+      },
     },
 
     /* Clear out the images directory if it exists */
@@ -82,6 +88,6 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-clean');
   grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-mkdir');
-  grunt.registerTask('default', ['clean', 'mkdir', 'responsive_images']);
+  grunt.registerTask('default', ['clean', 'mkdir', 'responsive_images', 'copy']);
 
 };
