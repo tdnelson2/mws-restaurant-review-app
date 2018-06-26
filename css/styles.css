@@ -100,6 +100,7 @@ section,
 
 #footer a {
   color: #fff;
+  padding: 24px 0;
 }
 
 /* ====================== Navigation ====================== */
@@ -120,6 +121,7 @@ nav h1 a {
   letter-spacing: 5px;
   font-weight: 200;
   text-transform: uppercase;
+  padding: 24px;
 }
 
 nav h1 a:hover,
