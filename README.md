@@ -3,7 +3,7 @@
 
 ## Overview
 
-I completed this for the [Udacity Mobile Web Specialist Certification Course](https://www.udacity.com/course/mobile-web-specialist-nanodegree--nd024). This commit represents **stage 1** of the course. The objective is to convert [this static webpage](https://github.com/udacity/mws-restaurant-stage-1) to a responsive, mobile-ready web application which is in compliance with accepted accessibility standards and functional during limited or no internet connection.
+I completed this for the [Udacity Mobile Web Specialist Certification Course](https://www.udacity.com/course/mobile-web-specialist-nanodegree--nd024). This commit represents **stage 1** of the course. The objective is to convert [this static webpage](https://github.com/udacity/mws-restaurant-stage-1) to a responsive, mobile-ready web application which is in compliance with accepted accessibility standards and functional during limited or no internet connectivity.
 
 ### Setup
 
