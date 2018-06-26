@@ -14,9 +14,7 @@ I completed this for the [Udacity Mobile Web Specialist Certification Course](ht
 
 ### Development
 * In a terminal `cd` into the project directory and run one of the following commands.
+ * Python 2.x: `python -m SimpleHTTPServer 8000`
+ * Python 3.x: `python3 -m http.server 8000`
+* In a browser go to http://localhost:8000 to view the app.
 
-##### Python 2.x dev server
-* `python -m SimpleHTTPServer 8000`
-
-##### Python 3.x dev server
-* `python3 -m http.server 8000`
