@@ -2,6 +2,7 @@
 
 # compiled output
 /img
+/css
 
 # dependencies
 /node_modules
