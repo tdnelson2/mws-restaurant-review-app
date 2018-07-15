@@ -1,5 +1,7 @@
-let restaurant;
-var map;
+/* global google, DBHelper, buildPictureEl, ScrollButton */
+
+self.restaurant;
+self.map;
 
 /**
  * New thumb images are served according to the follwing criteria:
@@ -18,7 +20,7 @@ const restaurantImgSizes = [
   { vpWidth: 580,  width1x: 345, width2x: 690 },
   { vpWidth: 490,  width1x: 539, width2x: 1078 },
   { vpWidth: 400,  width1x: 455, width2x: 910 },
-  { vpWidth: 320,  width1x: 360, width2x: 720 } ]
+  { vpWidth: 320,  width1x: 360, width2x: 720 } ];
 /**
  * Initialize Google map, called from HTML.
  */
@@ -36,19 +38,19 @@ window.initMap = () => {
       DBHelper.mapMarkerForRestaurant(self.restaurant, self.map);
     }
   });
-}
+};
 
 /**
  * Get current restaurant from page URL.
  */
-fetchRestaurantFromURL = (callback) => {
+const fetchRestaurantFromURL = (callback) => {
   if (self.restaurant) { // restaurant already fetched!
-    callback(null, self.restaurant)
+    callback(null, self.restaurant);
     return;
   }
   const id = getParameterByName('id');
   if (!id) { // no id found in URL
-    error = 'No restaurant id in URL'
+    const error = 'No restaurant id in URL';
     callback(error, null);
   } else {
     DBHelper.fetchRestaurantById(id, (error, restaurant) => {
@@ -58,15 +60,15 @@ fetchRestaurantFromURL = (callback) => {
         return;
       }
       fillRestaurantHTML();
-      callback(null, restaurant)
+      callback(null, restaurant);
     });
   }
-}
+};
 
 /**
  * Create restaurant HTML and add it to the webpage
  */
-fillRestaurantHTML = (restaurant = self.restaurant) => {
+const fillRestaurantHTML = (restaurant = self.restaurant) => {
   const name = document.getElementById('restaurant-name');
   name.innerHTML = restaurant.name;
 
@@ -85,12 +87,12 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
   }
   // fill reviews
   fillReviewsHTML();
-}
+};
 
 /**
  * Create restaurant operating hours HTML table and add it to the webpage.
  */
-fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hours) => {
+const fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hours) => {
   const hours = document.getElementById('restaurant-hours');
   for (let key in operatingHours) {
     const row = document.createElement('tr');
@@ -105,12 +107,12 @@ fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hours) => 
 
     hours.appendChild(row);
   }
-}
+};
 
 /**
  * Create all reviews HTML and add them to the webpage.
  */
-fillReviewsHTML = (reviews = self.restaurant.reviews) => {
+const fillReviewsHTML = (reviews = self.restaurant.reviews) => {
   const container = document.getElementById('reviews-container');
   const title = document.createElement('h3');
   title.innerHTML = 'Reviews';
@@ -127,12 +129,12 @@ fillReviewsHTML = (reviews = self.restaurant.reviews) => {
     ul.appendChild(createReviewHTML(review));
   });
   container.appendChild(ul);
-}
+};
 
 /**
  * Create review HTML and add it to the webpage.
  */
-createReviewHTML = (review) => {
+const createReviewHTML = (review) => {
   const li = document.createElement('li');
   const name = document.createElement('p');
   name.innerHTML = review.name;
@@ -151,25 +153,25 @@ createReviewHTML = (review) => {
   li.appendChild(comments);
 
   return li;
-}
+};
 
 /**
  * Add restaurant name to the breadcrumb navigation menu
  */
-fillBreadcrumb = (restaurant = self.restaurant) => {
+const fillBreadcrumb = (restaurant = self.restaurant) => {
   const breadcrumb = document.getElementById('breadcrumb');
   const li = document.createElement('li');
   li.innerHTML = restaurant.name;
   breadcrumb.appendChild(li);
-}
+};
 
 /**
  * Get a parameter by name from page URL.
  */
-getParameterByName = (name, url) => {
+const getParameterByName = (name, url) => {
   if (!url)
     url = window.location.href;
-  name = name.replace(/[\[\]]/g, '\\$&');
+  name = name.replace(/[[\]]/g, '\\$&');
   const regex = new RegExp(`[?&]${name}(=([^&#]*)|&|#|$)`),
     results = regex.exec(url);
   if (!results)
@@ -177,14 +179,14 @@ getParameterByName = (name, url) => {
   if (!results[2])
     return '';
   return decodeURIComponent(results[2].replace(/\+/g, ' '));
-}
+};
 
 /**
  * Adjust restaurant name width so elipses is added correctly.
  */
-setRestaurantNameWidth = () => {
+const setRestaurantNameWidth = () => {
   document.getElementById('restaurant-name').style.width = `${window.innerWidth-20}px`;
-}
+};
 
 setRestaurantNameWidth();
 
@@ -204,10 +206,10 @@ const scrollButton = new ScrollButton(restaurantNameEl, 'as-button', maxMobileRe
 /**
  * Handle accessibility button "Skip to main content".
  */
-skipToMainContent = () => {
+const skipToMainContent = () => { // eslint-disable-line no-unused-vars
   if (window.innerWidth < maxMobileRes) {
-    scrollButton.executeScroll()
+    scrollButton.executeScroll();
   } else {
     restaurantNameEl.focus();
   }
-}
+};

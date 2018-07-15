@@ -1,8 +1,4 @@
 
-// Define values for keycodes
-const VK_ENTER      = 13;
-const VK_TAB        = 9;
-
 
 /**
  * Implements a button whose action is to scroll the page by a distance of a full view height.
@@ -14,14 +10,13 @@ const VK_TAB        = 9;
  * @param {Integer} verticalScrollThreshold The max amount of vertical scrolling before element is no longer a button.
  * @param {Integer} scrollOffset The amount to subtract from the full view height scroll.
  */
-class ScrollButton {
-  constructor(el,
-              asButtonClass,
-              maxEnableWidth=10000,
-              verticalScrollThreshold=10000,
-              scrollOffset=0) {
+class ScrollButton { // eslint-disable-line no-unused-vars
+  constructor(el, asButtonClass, maxEnableWidth=10000, verticalScrollThreshold=10000, scrollOffset=0) {
+    this.VK_ENTER = 13;
+    this.VK_TAB = 9;
+
     this.el = el;
-    this.asButtonClass = asButtonClass
+    this.asButtonClass = asButtonClass;
     this.maxEnableWidth = maxEnableWidth;
     this.verticalScrollThreshold = verticalScrollThreshold;
     this.scrollOffset = scrollOffset;
@@ -38,7 +33,7 @@ class ScrollButton {
   startListeners() {
     this.el.addEventListener('click', () => {
       if (!this.isMobile()) return;
-        this.executeScroll()
+      this.executeScroll();
     });
 
     window.addEventListener('resize', () => this.toggleMobile());
@@ -72,7 +67,7 @@ class ScrollButton {
   toggleOff() { if (this.shouldBeOn) this.toggleState(); }
 
   toggleState() {
-    this.shouldBeOn = !this.shouldBeOn
+    this.shouldBeOn = !this.shouldBeOn;
     if (this.shouldBeOn) {
       this.el.classList.add(this.asButtonClass);
       this.el.setAttribute('role', 'button');
@@ -88,19 +83,19 @@ class ScrollButton {
 
   executeScroll() {
     this.buttonWasPressed = true;
-    window.scrollBy({ "behavior": "smooth", "top": this.calcDestination() });
+    window.scrollBy({ 'behavior': 'smooth', 'top': this.calcDestination() });
   }
 
   handleKeyDown(e) {
-      switch (e.keyCode) {
-      case VK_ENTER:
-        this.executeScroll()
-        break;
-      case VK_TAB:
-        if (window.scrollY > this.verticalScrollThreshold) {
-          this.el.setAttribute('tabindex', '-1');
-        }
+    switch (e.keyCode) {
+    case this.VK_ENTER:
+      this.executeScroll();
+      break;
+    case this.VK_TAB:
+      if (window.scrollY > this.verticalScrollThreshold) {
+        this.el.setAttribute('tabindex', '-1');
       }
-      return;
+    }
+    return;
   }
 }

@@ -1,12 +1,4 @@
-// Define values for keycodes
-const VK_ENTER = 13;
-const VK_ESC = 27;
-const VK_SPACE = 32;
-const VK_LEFT = 37;
-const VK_UP = 38;
-const VK_RIGHT = 39;
-const VK_DOWN = 40;
-const VK_TAB = 9;
+
 
 let LAST_ID = 0;
 
@@ -14,11 +6,11 @@ let LAST_ID = 0;
  * Generate a unique DOM ID.
  * @return {string}
  */
-function nextId() {
+const nextId = () => {
   let id = ':' + LAST_ID;
   LAST_ID++;
   return id;
-}
+};
 
 /**
  * Implements a minimal custom select button: a button with a list of options which pops up whent the button is focused
@@ -29,10 +21,19 @@ function nextId() {
  *     it with the `ListBox` pattern.
  */
 class CustomSelect {
-  constructor(el, listEl, ariaLblPrefix) {
+  constructor(el, listEl, ariaLblPrefix, callback) {
+    this.VK_ENTER = 13;
+    this.VK_ESC = 27;
+    this.VK_SPACE = 32;
+    this.VK_LEFT = 37;
+    this.VK_UP = 38;
+    this.VK_RIGHT = 39;
+    this.VK_DOWN = 40;
+
     this.el = el;
     this.listEl = listEl;
     this.ariaLblPrefix = ariaLblPrefix;
+    this.callback = callback;
     this.el.setAttribute('aria-expanded', false);
     this.listbox = new ListBox(listEl, this);
     this.listEl.id = nextId();
@@ -52,47 +53,46 @@ class CustomSelect {
   }
 
   hideListbox() {
-    console.log('hideListbox()');
     this.listbox.hide();
     this.el.setAttribute('aria-expanded', false);
     this.el.removeAttribute('aria-activedescendant');
   }
 
-  handleClick(e) {
+  handleClick() {
     this.showListbox();
   }
 
-  handleBlur(e) {
+  handleBlur() {
     this.hideListbox();
   }
 
   handleKeyDown(e) {
-    if ([VK_LEFT, VK_UP, VK_RIGHT, VK_DOWN, VK_ENTER].indexOf(e.keyCode) > -1) {
+    if ([this.VK_LEFT, this.VK_UP, this.VK_RIGHT, this.VK_DOWN, this.VK_ENTER].indexOf(e.keyCode) > -1) {
       e.preventDefault();
     }
     e.cancelBubble = true;
     switch (e.keyCode) {
-      case VK_SPACE:
-        if (this.listbox.hidden) this.showListbox()
-      case VK_DOWN:
-        if (this.listbox.hidden) this.showListbox()
-        this.listbox.nextActiveListItem();
+    case this.VK_SPACE:
+      if (this.listbox.hidden) this.showListbox();
+      break;
+    case this.VK_DOWN:
+      if (this.listbox.hidden) this.showListbox();
+      this.listbox.nextActiveListItem();
+      break;
+    case this.VK_UP:
+      if (this.listbox.hidden) this.showListbox();
+      this.listbox.previousActiveListItem();
+      break;
+    case this.VK_ENTER:
+      var active = this.listbox.activeItem;
+      if (!active)
         break;
-      case VK_UP:
-        if (this.listbox.hidden) this.showListbox()
-        this.listbox.previousActiveListItem();
-        break;
-      case VK_ENTER:
-        var active = this.listbox.activeItem;
-        if (!active)
-          break;
-        this.setSelected(active);
-        console.log('VK_ENTER');
-        this.hideListbox();
-        break;
-      case VK_ESC:
-        this.hideListbox();
-        break;
+      this.setSelected(active);
+      this.hideListbox();
+      break;
+    case this.VK_ESC:
+      this.hideListbox();
+      break;
     }
 
     return;
@@ -102,7 +102,7 @@ class CustomSelect {
     this.el.textContent = el.textContent;
     this.el.setAttribute('value', el.getAttribute('value'));
     this.el.setAttribute('aria-label', `${this.ariaLblPrefix}: ${el.textContent}`);
-    updateRestaurants();
+    this.callback();
   }
 
   setActiveDescendant(el) {
@@ -137,7 +137,6 @@ class ListBox {
   }
 
   get hidden() {
-    console.log('hidden()', this.el.hasAttribute('hidden'));
     return this.el.hasAttribute('hidden');
   }
 
@@ -153,7 +152,6 @@ class ListBox {
   }
 
   hide() {
-    console.log('hide()');
     if (this.hidden)
       return;
 
@@ -163,14 +161,14 @@ class ListBox {
   }
 
   handleHoverOnItem(e) {
-    var newIdx = this.visibleItems.indexOf(e.target);
+    const newIdx = this.visibleItems.indexOf(e.target);
     if (newIdx < 0)
       return;
     this.changeActiveListitem(newIdx);
   }
 
   handleClickOnItem(e) {
-    var item = e.target;
+    const item = e.target;
     if (this.items.indexOf(item) < 0)
       return;
     this.customSelect.setSelected(item);
@@ -178,23 +176,23 @@ class ListBox {
   }
 
   nextActiveListItem() {
-    var active = this.activeItem;
-    var activeIdx = -1;
+    const active = this.activeItem;
+    let activeIdx = -1;
     if (active)
       activeIdx = this.visibleItems.indexOf(active);
 
-    var newIdx = activeIdx;
+    let newIdx = activeIdx;
     newIdx = (newIdx + 1) % this.visibleItems.length;
     this.changeActiveListitem(newIdx);
   }
 
   previousActiveListItem() {
-    var active = this.activeItem;
-    var activeIdx = -1;
+    const active = this.activeItem;
+    let activeIdx = -1;
     if (active)
       activeIdx = this.visibleItems.indexOf(active);
 
-    var newIdx = activeIdx;
+    let newIdx = activeIdx;
     newIdx--;
     if (newIdx < 0)
       newIdx += this.visibleItems.length;
@@ -203,8 +201,8 @@ class ListBox {
   }
 
   changeActiveListitem(newIdx) {
-    var active = this.activeItem;
-    var newActive = this.visibleItems[newIdx];
+    const active = this.activeItem;
+    const newActive = this.visibleItems[newIdx];
     if (active)
       active.classList.remove('active');
     newActive.classList.add('active');
@@ -214,16 +212,16 @@ class ListBox {
 
 
 
-fillCustomSelectBox = (items, listboxID, buttonID, ariaLblPrefix) => {
+const fillCustomSelectBox = (items, listboxID, buttonID, ariaLblPrefix, callback) => { // eslint-disable-line no-unused-vars
   const listbox = document.getElementById(listboxID);
   const ul = listbox.querySelector('[role=presentation]');
   const button = document.getElementById(buttonID);
   items.forEach(item => {
     const li = document.createElement('li');
     li.setAttribute('role', 'option');
-    li.setAttribute('value', item)
+    li.setAttribute('value', item);
     li.innerHTML = item;
     ul.append(li);
   });
-  new CustomSelect(button, listbox, ariaLblPrefix)
-}
+  new CustomSelect(button, listbox, ariaLblPrefix, callback);
+};

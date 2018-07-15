@@ -1,3 +1,4 @@
+/*eslint-env node*/
 /*
  After you have changed the settings under responsive_images
  run this with one of these options:
@@ -7,7 +8,7 @@
 */
 
 module.exports = function(grunt) {
-  const quality = 30;
+  const quality = 40;
   const suffix = 'w';
   grunt.initConfig({
     responsive_images: {
@@ -15,33 +16,33 @@ module.exports = function(grunt) {
         options: {
           engine: 'im',
           sizes: [
-            { width: 230, quality, suffix },
-            { width: 254, quality, suffix },
-            { width: 261, quality, suffix },
-            { width: 312, quality, suffix },
-            { width: 326, quality, suffix },
-            { width: 341, quality, suffix },
-            { width: 345, quality, suffix },
-            { width: 360, quality, suffix },
-            { width: 372, quality, suffix },
-            { width: 425, quality, suffix },
-            { width: 455, quality, suffix },
-            { width: 460, quality, suffix },
-            { width: 498, quality, suffix },
-            { width: 508, quality, suffix },
-            { width: 522, quality, suffix },
-            { width: 539, quality, suffix },
-            { width: 584, quality, suffix },
-            { width: 615, quality, suffix },
-            { width: 624, quality, suffix },
-            { width: 652, quality, suffix },
-            { width: 682, quality, suffix },
-            { width: 690, quality, suffix },
-            { width: 720, quality, suffix },
-            { width: 744, quality, suffix },
-            { width: 850, quality, suffix },
-            { width: 910, quality, suffix },
-            { width: 996, quality, suffix },
+            { width: 230,  quality, suffix },
+            { width: 254,  quality, suffix },
+            { width: 261,  quality, suffix },
+            { width: 312,  quality, suffix },
+            { width: 326,  quality, suffix },
+            { width: 341,  quality, suffix },
+            { width: 345,  quality, suffix },
+            { width: 360,  quality, suffix },
+            { width: 372,  quality, suffix },
+            { width: 425,  quality, suffix },
+            { width: 455,  quality, suffix },
+            { width: 460,  quality, suffix },
+            { width: 498,  quality, suffix },
+            { width: 508,  quality, suffix },
+            { width: 522,  quality, suffix },
+            { width: 539,  quality, suffix },
+            { width: 584,  quality, suffix },
+            { width: 615,  quality, suffix },
+            { width: 624,  quality, suffix },
+            { width: 652,  quality, suffix },
+            { width: 682,  quality, suffix },
+            { width: 690,  quality, suffix },
+            { width: 720,  quality, suffix },
+            { width: 744,  quality, suffix },
+            { width: 850,  quality, suffix },
+            { width: 910,  quality, suffix },
+            { width: 996,  quality, suffix },
             { width: 1078, quality, suffix },
             { width: 1168, quality, suffix },
             { width: 1230, quality, suffix },]

@@ -25,7 +25,7 @@ self.addEventListener('install', event => {
         '/img/na.svg'
       ]).catch(error => {
         console.log('static cache failed to open: ', error);
-      })
+      });
     })
   );
 });
@@ -50,10 +50,10 @@ self.addEventListener('fetch', event => {
             cache.put(event.request, fetchResponse.clone());
             return fetchResponse;
           });
-        }).catch(error => {
+        }).catch(() => {
           if (event.request.url.endsWith('.jpg')) return caches.match('/img/na.svg');
           return new Response('There is no internet', {
-            statusText: "It seems you aren't connected to the internet.",
+            statusText: 'It seems you aren\'t connected to the internet.',
             status: 404
           });
         })

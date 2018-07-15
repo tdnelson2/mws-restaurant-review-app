@@ -5,7 +5,8 @@ $secondary-background-color: #f3f3f3;
 $primary-color: #333;
 $secondary-color: #00488e;
 $tertiary-color: #8e0048;
-$quaternary-color: #ccc;
+$quaternary-color: #53002a;
+$quinary-color: #ccc;
 
 @charset "utf-8";
 
@@ -187,7 +188,7 @@ nav {
 #map {
   height: 400px;
   width: 100%;
-  background-color: $quaternary-color;
+  background-color: $quinary-color;
 }
 
 /* ====================== Restaurant Filtering ====================== */
@@ -280,7 +281,7 @@ nav {
 }
 
 #restaurants-list .restaurant-img {
-  background-color: $quaternary-color;
+  background-color: $quinary-color;
   display: block;
   margin: 20px auto;
   max-width: 100%;
@@ -289,7 +290,7 @@ nav {
 #restaurants-list {
   li {
     background-color: $background-color;
-    border: 2px solid $quaternary-color;
+    border: 2px solid $quinary-color;
     font-family: Arial, sans-serif;
     margin: 15px;
     padding: 0 30px 25px;
@@ -331,6 +332,8 @@ nav {
     text-align: center;
     text-decoration: none;
     text-transform: uppercase;
+    box-shadow: 0 4px 0 $quaternary-color;
+    transition: box-shadow .1s ease-in-out;
   }
 
   li button:hover,
@@ -339,7 +342,7 @@ nav {
     border: 1px solid $background-color;
     padding: 9px 29px;
     cursor: pointer;
-    box-shadow: 0 0 0px 5px $secondary-color;
+    box-shadow: 0 0 0px 5px $quaternary-color;
   }
 }
 
@@ -373,12 +376,12 @@ nav {
     height: calc(100vh - 210px);
     width: 100vw;
     border-width: 1px 1px;
-    border-color: $quaternary-color;
+    border-color: $quinary-color;
     border-style: solid;
   }
 
   #map {
-    background-color: $quaternary-color;
+    background-color: $quinary-color;
     height: 100%;
     width: 100%;
   }
@@ -494,7 +497,7 @@ nav {
 
 #restaurant-container,
 #reviews-container {
-  border-bottom: 1px solid $quaternary-color;
+  border-bottom: 1px solid $quinary-color;
   border-top: 1px solid $background-color;
   padding: 10px 0 30px;
 }
@@ -604,7 +607,7 @@ nav {
   /* restaurant info page */
   #restaurant-information,
   .inside #breadcrumb {
-    border-right: 1px solid $quaternary-color;
+    border-right: 1px solid $quinary-color;
   }
 
   #restaurant-information {
