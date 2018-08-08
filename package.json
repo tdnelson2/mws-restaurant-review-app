@@ -34,5 +34,8 @@
     "imagemin-pngquant": "^5.1.0",
     "pump": "^3.0.0",
     "run-sequence": "^2.2.1"
+  },
+  "dependencies": {
+    "idb": "^2.1.3"
   }
 }

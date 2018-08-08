@@ -12,7 +12,6 @@ const sourcemaps   = require('gulp-sourcemaps');
 const clean        = require('gulp-clean');
 const runSequence  = require('run-sequence');
 const imagemin     = require('gulp-imagemin');
-const pngquant     = require('imagemin-pngquant');
 
 const mainPage = [
   'js/custom-select.js',
@@ -25,6 +24,29 @@ const detailsPage = [
   'js/dbhelper.js',
   'js/picture-el-builder.js',
   'js/restaurant_info.js'];
+
+const serviceWorker = [
+  'node_modules/idb/lib/idb.js',
+  'js/myidb.js',
+  './sw.js'
+];
+
+const favicons = [
+  'favicons/android-chrome-192x192.png',
+  'favicons/android-chrome-512x512.png',
+  'favicons/apple-touch-icon.png',
+  'favicons/browserconfig.xml',
+  'favicons/favicon-16x16.png',
+  'favicons/favicon-32x32.png',
+  'favicons/favicon.ico',
+  'favicons/mstile-70x70.png',
+  'favicons/mstile-144x144.png',
+  'favicons/mstile-150x150.png',
+  'favicons/mstile-310x150.png',
+  'favicons/mstile-310x310.png',
+  'favicons/safari-pinned-tab.svg',
+  'favicons/site.webmanifest'
+];
 
 // Static Server + watching scss/html files
 gulp.task('serve', ['styles'], () => {
@@ -94,6 +116,11 @@ gulp.task('copy-images', () => {
     .pipe(gulp.dest('dist/img'));
 });
 
+gulp.task('copy-favicons', () => {
+  return gulp.src(favicons)
+    .pipe(gulp.dest('dist/'));
+});
+
 gulp.task('copy-data', () => {
   return gulp.src('data/restaurants.json')
     .pipe(gulp.dest('dist/data'));
@@ -110,6 +137,8 @@ const scripts = (paths, outputName, outputDir) => {
 gulp.task('scripts', () => {
   scripts(mainPage, 'main-all.js', 'dist/js');
   scripts(detailsPage, 'restaurant-all.js', 'dist/js');
+  scripts(serviceWorker, 'sw.js', 'dist');
+  return gulp.src('js/sw-reg.js').pipe(gulp.dest('dist/js'));
 });
 
 const scriptsDist = (paths, outputName, outputDir) => {
@@ -127,6 +156,13 @@ const scriptsDist = (paths, outputName, outputDir) => {
 gulp.task('scripts-dist', () => {
   scriptsDist(mainPage, 'main-all.js', 'dist/js');
   scriptsDist(detailsPage, 'restaurant-all.js', 'dist/js');
+  scriptsDist(['js/sw-reg.js'], 'sw-reg.js', 'dist/js');
+  return gulp.src(serviceWorker)
+    .pipe(sourcemaps.init())
+    .pipe(concat('sw.js'))
+    .pipe(uglify())
+    .pipe(sourcemaps.write())
+    .pipe(gulp.dest('dist'));
 });
 
 gulp.task('clean', () => {
@@ -143,9 +179,9 @@ gulp.task('tests', () => {
 });
 
 gulp.task('default', () => {
-  runSequence('lint', 'clean', 'copy-images', ['copy-data', 'copy-html', 'scripts'], 'serve');
+  runSequence('lint', 'clean', 'copy-images', ['copy-html', 'scripts', 'copy-favicons'], 'serve');
 });
 
 gulp.task('build-prod', () => {
-  runSequence('lint', 'clean', 'copy-images', ['copy-data', 'copy-html', 'scripts-dist', 'styles']);
+  runSequence('lint', 'clean', 'copy-images', ['copy-html', 'scripts-dist', 'styles', 'copy-favicons']);
 });
