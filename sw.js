@@ -51,28 +51,43 @@ self.addEventListener('fetch', event => {
         idbFetch
           .then(result => {
 
-            // Check if result is empty an array
-            const data = 
-              (typeof result[Symbol.iterator] === 'function' && result.length === 0)
-                ? undefined
-                : result;
-
-            return (
-              data ||
-              fetch(event.request)
+            // PERFORM 2 CHECKS on the data returnd from the IndexedDB:
+            //   CHECK whether the value is an array: 
+            //     If it returns an array, we know we are expecting
+            //     more than one entry. With this in mind, we reject
+            //     any array with only 1 item because if we were
+            //     expecting one item it would have returned as
+            //     an object, not an array.
+            //   CHECK whether the value is null/undefined.
+            //     Obviously we also reject it if the value is undefined
+            //     or an empty array.
+            if (
+              (result === undefined)
+              ||
+              (typeof result[Symbol.iterator] === 'function' && result.length < 2)
+            ) {
+              return fetch(event.request)
                 .then(response => response.json())
                 .then(responseData => {
+
+                  // Store the newly fetched data in the IndexedDB
+                  // and return pass it along to output.
                   myidb.update(responseData);
                   return responseData;
-                })
-            );
+                });
+            } else {
+
+              // `results` passed the checks so we return it 
+              // without going to the network.
+              return result;
+            }
           })
           .then(outputData => {
             return new Response(JSON.stringify(outputData));
           })
           .catch(() => {
             return new Response('Error fetching data from the API', {
-              statusText: 'Either the API isn\' available or there was an error retrieving from the IndexedDB.',
+              statusText: 'Either the API isn\'t available or there was an error retrieving from the IndexedDB.',
               status: 500
             });
           })
