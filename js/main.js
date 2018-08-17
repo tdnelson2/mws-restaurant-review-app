@@ -1,5 +1,8 @@
-/* global DBHelper, fillCustomSelectBox, google, buildPictureEl */
 
+/*global DBHelper, fillCustomSelectBox, google, buildPictureEl MyIDB appName*/
+
+self.restaurantsPromise;
+self.restaurantIDB;
 self.restaurants;
 self.neighborhoods;
 self.cuisines;
@@ -27,22 +30,31 @@ const restaurantThumbs = [
  * Fetch neighborhoods and cuisines as soon as the page is loaded.
  */
 document.addEventListener('DOMContentLoaded', () => {
-  fetchNeighborhoods();
-  fetchCuisines();
+  self.restaurantIDB = new MyIDB(appName, appName, 1, 'id', 'createdAt', 20);
+  self.restaurantsPromise = DBHelper.fetchRestaurants(self.restaurantIDB);
+  console.log(self.restaurantsPromise);
+  self.restaurantsPromise
+    .then(results => {
+      console.log(results);
+      DBHelper.fetchNeighborhoods(results, fetchNeighborhoods);
+      DBHelper.fetchCuisines(results, fetchCuisines);
+      updateRestaurants();
+    })
+    .catch(err => console.error(err));
 });
 
 /**
  * Fetch all neighborhoods and set their HTML.
  */
-const fetchNeighborhoods = () => {
-  DBHelper.fetchNeighborhoods((error, neighborhoods) => {
-    if (error) { // Got an error
-      console.error(error);
-    } else {
-      self.neighborhoods = neighborhoods;
-      fillNeighborhoodsHTML();
-    }
-  });
+const fetchNeighborhoods = (error, neighborhoods) => {
+  console.log('fetchNeighborhoods: error: ', error);
+  console.log('fetchNeighborhoods: neighborhoods: ', neighborhoods);
+  if (error) { // Got an error
+    console.error(error);
+  } else {
+    self.neighborhoods = neighborhoods;
+    fillNeighborhoodsHTML();
+  }
 };
 
 /**
@@ -55,15 +67,15 @@ const fillNeighborhoodsHTML = (neighborhoods = self.neighborhoods) => {
 /**
  * Fetch all cuisines and set their HTML.
  */
-const fetchCuisines = () => {
-  DBHelper.fetchCuisines((error, cuisines) => {
-    if (error) { // Got an error!
-      console.error(error);
-    } else {
-      self.cuisines = cuisines;
-      fillCuisinesHTML();
-    }
-  });
+const fetchCuisines = (error, cuisines) => {
+  console.log('fetchCuisines: error: ', error);
+  console.log('fetchCuisines: cuisines: ', cuisines);
+  if (error) { // Got an error!
+    console.error(error);
+  } else {
+    self.cuisines = cuisines;
+    fillCuisinesHTML();
+  }
 };
 
 /**
@@ -95,8 +107,7 @@ window.initMap = () => {
 const updateRestaurants = () => {
   const cuisine = document.getElementById('cuisines-select-button').getAttribute('value');
   const neighborhood = document.getElementById('neighborhoods-select-button').getAttribute('value');
-
-  DBHelper.fetchRestaurantByCuisineAndNeighborhood(cuisine, neighborhood, (error, restaurants) => {
+  DBHelper.fetchRestaurantByCuisineAndNeighborhood(self.restaurantsPromise, cuisine, neighborhood, (error, restaurants) => {
     if (error) { // Got an error!
       console.error(error);
     } else {

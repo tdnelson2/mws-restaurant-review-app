@@ -14,39 +14,29 @@ const runSequence  = require('run-sequence');
 const imagemin     = require('gulp-imagemin');
 
 const mainPage = [
+  'js/app-name.js',
+  'node_modules/idb/lib/idb.js',
+  'js/myidb.js',
   'js/custom-select.js',
   'js/dbhelper.js',
   'js/picture-el-builder.js',
   'js/main.js'];
 
 const detailsPage = [
+  'js/app-name.js',
+  'node_modules/idb/lib/idb.js',
+  'js/myidb.js',
   'js/scroll-button.js',
   'js/dbhelper.js',
   'js/picture-el-builder.js',
   'js/restaurant_info.js'];
 
 const serviceWorker = [
-  'node_modules/idb/lib/idb.js',
-  'js/myidb.js',
+  'js/app-name.js',
   './sw.js'
 ];
 
-const favicons = [
-  'favicons/android-chrome-192x192.png',
-  'favicons/android-chrome-512x512.png',
-  'favicons/apple-touch-icon.png',
-  'favicons/browserconfig.xml',
-  'favicons/favicon-16x16.png',
-  'favicons/favicon-32x32.png',
-  'favicons/favicon.ico',
-  'favicons/mstile-70x70.png',
-  'favicons/mstile-144x144.png',
-  'favicons/mstile-150x150.png',
-  'favicons/mstile-310x150.png',
-  'favicons/mstile-310x310.png',
-  'favicons/safari-pinned-tab.svg',
-  'favicons/site.webmanifest'
-];
+const favicons = './favicons/*';
 
 // Static Server + watching scss/html files
 gulp.task('serve', ['styles'], () => {

@@ -1,5 +1,7 @@
-/* global google, DBHelper, buildPictureEl, ScrollButton */
+/* global google, DBHelper, buildPictureEl, ScrollButton MyIDB, appName */
 
+self.restaurantPromise;
+self.restaurantIDB;
 self.restaurant;
 self.map;
 
@@ -25,6 +27,7 @@ const restaurantImgSizes = [
  * Initialize Google map, called from HTML.
  */
 window.initMap = () => {
+  self.restaurantIDB = new MyIDB(appName, appName, 1, 'id', 'createdAt', 20);
   fetchRestaurantFromURL((error, restaurant) => {
     if (error) { // Got an error!
       console.error(error);
@@ -53,15 +56,13 @@ const fetchRestaurantFromURL = (callback) => {
     const error = 'No restaurant id in URL';
     callback(error, null);
   } else {
-    DBHelper.fetchRestaurantById(id, (error, restaurant) => {
-      self.restaurant = restaurant;
-      if (!restaurant) {
-        console.error(error);
-        return;
-      }
-      fillRestaurantHTML();
-      callback(null, restaurant);
-    });
+    DBHelper.fetchRestaurantById(self.restaurantIDB, id)
+      .then(restaurant => {
+        self.restaurant = restaurant;
+        fillRestaurantHTML();
+        callback(null, restaurant);
+      })
+      .catch(err => console.error(err));
   }
 };
 
