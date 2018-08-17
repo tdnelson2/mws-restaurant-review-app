@@ -8,7 +8,7 @@
 */
 
 module.exports = function(grunt) {
-  const quality = 40;
+  const quality = 10;
   const suffix = 'w';
   grunt.initConfig({
     responsive_images: {

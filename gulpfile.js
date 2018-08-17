@@ -12,24 +12,18 @@ const sourcemaps   = require('gulp-sourcemaps');
 const clean        = require('gulp-clean');
 const runSequence  = require('run-sequence');
 const imagemin     = require('gulp-imagemin');
+// const inline       = require('gulp-inline');
 
-const mainPage = [
+const scriptBundle = [
   'js/app-name.js',
   'node_modules/idb/lib/idb.js',
   'js/myidb.js',
+  'js/dbhelper.js',
   'js/custom-select.js',
-  'js/dbhelper.js',
   'js/picture-el-builder.js',
-  'js/main.js'];
-
-const detailsPage = [
-  'js/app-name.js',
-  'node_modules/idb/lib/idb.js',
-  'js/myidb.js',
   'js/scroll-button.js',
-  'js/dbhelper.js',
-  'js/picture-el-builder.js',
-  'js/restaurant_info.js'];
+  'js/restaurant_info.js',
+  'js/main.js'];
 
 const serviceWorker = [
   'js/app-name.js',
@@ -117,18 +111,23 @@ gulp.task('copy-data', () => {
 });
 
 const scripts = (paths, outputName, outputDir) => {
-  return gulp.src(paths)
+  gulp.src(paths)
     .pipe(sourcemaps.init())
     .pipe(concat(outputName))
     .pipe(sourcemaps.write())
     .pipe(gulp.dest(outputDir));
+  // return gulp.src(['dist/index.html', 'dist/restaurants.html'])
+  // return gulp.src('dist/index.html')
+  //   .pipe(inline({
+  //     base: './',
+  //     disableTypes: ['svg', 'img', 'js']
+  //   }))
+  //   .pipe(gulp.dest('dist/'));
 };
 
 gulp.task('scripts', () => {
-  scripts(mainPage, 'main-all.js', 'dist/js');
-  scripts(detailsPage, 'restaurant-all.js', 'dist/js');
-  scripts(serviceWorker, 'sw.js', 'dist');
-  return gulp.src('js/sw-reg.js').pipe(gulp.dest('dist/js'));
+  scripts(scriptBundle, 'script-bundle.js', 'dist/js');
+  return scripts(serviceWorker, 'sw.js', 'dist');
 });
 
 const scriptsDist = (paths, outputName, outputDir) => {
@@ -144,9 +143,7 @@ const scriptsDist = (paths, outputName, outputDir) => {
 };
 
 gulp.task('scripts-dist', () => {
-  scriptsDist(mainPage, 'main-all.js', 'dist/js');
-  scriptsDist(detailsPage, 'restaurant-all.js', 'dist/js');
-  scriptsDist(['js/sw-reg.js'], 'sw-reg.js', 'dist/js');
+  scriptsDist(scriptBundle, 'script-bundle.js', 'dist/js');
   return gulp.src(serviceWorker)
     .pipe(sourcemaps.init())
     .pipe(concat('sw.js'))

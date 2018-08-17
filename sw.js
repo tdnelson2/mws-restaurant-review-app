@@ -12,9 +12,7 @@ self.addEventListener('install', event => {
         '/css/styles.css',
         '/index.html',
         '/restaurant.html',
-        '/js/main-all.js',
-        '/js/restaurant-all.js',
-        '/js/sw-reg.js',
+        '/js/script-bundle.js',
         '/img/na.svg'
       ]).catch(error => {
         console.error('static cache failed to open: ', error);

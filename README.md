@@ -7,7 +7,12 @@ I completed this for the [Udacity Mobile Web Specialist Certification Course](ht
 
 ### Requirements
 
-* Development requires [Grunt](https://gruntjs.com/), [Gulp](https://gulpjs.com/), [Browserify](http://browserify.org/#install), [ESLint](https://eslint.org/docs/user-guide/getting-started) and [sailsjs](https://sailsjs.com/get-started). In a terminal, run these to install:
+* [ImageMagick](https://www.imagemagick.org/script/download.php#macosx) is required to use the Grunt script to build the responsive images. The installation process is quite lengthy so if you don't want to build the responsive images, you can download them [here](https://drive.google.com/file/d/1IdAnvCcv86bk26hY2B9RzKWSag7WJscy/view?usp=sharing). Just unzip in the project directory before running gulp. Otherwise here are the installation instructions for macOS (I've only attempted installation on macOS):
+  * Make sure [Xcode and the Xcode Command Line Tools](https://guide.macports.org/#installing.xcode) are installed.
+  * Downlaod and install [MacPorts](https://www.macports.org/install.php).
+  * In a terminal run `sudo port install ImageMagick` to install ImageMagick. Be patient. Installation can take several minutes.
+
+* Development also requires [Grunt](https://gruntjs.com/), [Gulp](https://gulpjs.com/), [Browserify](http://browserify.org/#install), [ESLint](https://eslint.org/docs/user-guide/getting-started) and [sailsjs](https://sailsjs.com/get-started). In a terminal, run these to install:
   * Grunt: `npm install -g grunt-cli`
   * Gulp: `npm install -g gulp-cli`
   * Browserify: `npm install -g browserify`

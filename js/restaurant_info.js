@@ -1,7 +1,5 @@
-/* global google, DBHelper, buildPictureEl, ScrollButton MyIDB, appName */
+/* global DBHelper buildPictureEl */
 
-self.restaurantPromise;
-self.restaurantIDB;
 self.restaurant;
 self.map;
 
@@ -23,30 +21,11 @@ const restaurantImgSizes = [
   { vpWidth: 490,  width1x: 539, width2x: 1078 },
   { vpWidth: 400,  width1x: 455, width2x: 910 },
   { vpWidth: 320,  width1x: 360, width2x: 720 } ];
-/**
- * Initialize Google map, called from HTML.
- */
-window.initMap = () => {
-  self.restaurantIDB = new MyIDB(appName, appName, 1, 'id', 'createdAt', 20);
-  fetchRestaurantFromURL((error, restaurant) => {
-    if (error) { // Got an error!
-      console.error(error);
-    } else {
-      self.map = new google.maps.Map(document.getElementById('map'), {
-        zoom: 16,
-        center: restaurant.latlng,
-        scrollwheel: false
-      });
-      fillBreadcrumb();
-      DBHelper.mapMarkerForRestaurant(self.restaurant, self.map);
-    }
-  });
-};
 
 /**
  * Get current restaurant from page URL.
  */
-const fetchRestaurantFromURL = (callback) => {
+const fetchRestaurantFromURL = (callback) => { // eslint-disable-line no-unused-vars
   if (self.restaurant) { // restaurant already fetched!
     callback(null, self.restaurant);
     return;
@@ -159,7 +138,7 @@ const createReviewHTML = (review) => {
 /**
  * Add restaurant name to the breadcrumb navigation menu
  */
-const fillBreadcrumb = (restaurant = self.restaurant) => {
+const fillBreadcrumb = (restaurant = self.restaurant) => { // eslint-disable-line no-unused-vars
   const breadcrumb = document.getElementById('breadcrumb');
   const li = document.createElement('li');
   li.innerHTML = restaurant.name;
@@ -169,9 +148,7 @@ const fillBreadcrumb = (restaurant = self.restaurant) => {
 /**
  * Get a parameter by name from page URL.
  */
-const getParameterByName = (name, url) => {
-  if (!url)
-    url = window.location.href;
+const getParameterByName = (name, url = window.location.href) => {
   name = name.replace(/[[\]]/g, '\\$&');
   const regex = new RegExp(`[?&]${name}(=([^&#]*)|&|#|$)`),
     results = regex.exec(url);
@@ -185,32 +162,17 @@ const getParameterByName = (name, url) => {
 /**
  * Adjust restaurant name width so elipses is added correctly.
  */
-const setRestaurantNameWidth = () => {
+const setRestaurantNameWidth = () => { // eslint-disable-line no-unused-vars
   document.getElementById('restaurant-name').style.width = `${window.innerWidth-20}px`;
 };
-
-setRestaurantNameWidth();
-
-window.addEventListener('resize', () => {
-  setRestaurantNameWidth();
-});
-
-/**
- * Listen for when user clicks "More details".
- */
-const offset = 209;
-const maxMobileRes = 900;
-const buttonScrollThreshold = 15;
-const restaurantNameEl = document.getElementById('restaurant-name-container');
-const scrollButton = new ScrollButton(restaurantNameEl, 'as-button', maxMobileRes, buttonScrollThreshold, offset);
 
 /**
  * Handle accessibility button "Skip to main content".
  */
 const skipToMainContent = () => { // eslint-disable-line no-unused-vars
-  if (window.innerWidth < maxMobileRes) {
-    scrollButton.executeScroll();
+  if (window.innerWidth < self.maxMobileRes) {
+    self.scrollButton.executeScroll();
   } else {
-    restaurantNameEl.focus();
+    self.restaurantNameEl.focus();
   }
 };

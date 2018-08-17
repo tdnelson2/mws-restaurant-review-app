@@ -1,6 +1,7 @@
 
-/*global DBHelper, fillCustomSelectBox, google, buildPictureEl MyIDB appName*/
+/*global DBHelper, fillCustomSelectBox, google, buildPictureEl MyIDB appName fetchRestaurantFromURL fillBreadcrumb setRestaurantNameWidth ScrollButton*/
 
+/* main page */
 self.restaurantsPromise;
 self.restaurantIDB;
 self.restaurants;
@@ -8,6 +9,11 @@ self.neighborhoods;
 self.cuisines;
 self.map;
 self.markers = [];
+
+/* restaurant info page */
+self.scrollButton;
+self.maxMobileRes = 900;
+self.restaurantNameEl;
 
 /**
  * New thumb images are served according to the follwing criteria:
@@ -31,24 +37,22 @@ const restaurantThumbs = [
  */
 document.addEventListener('DOMContentLoaded', () => {
   self.restaurantIDB = new MyIDB(appName, appName, 1, 'id', 'createdAt', 20);
-  self.restaurantsPromise = DBHelper.fetchRestaurants(self.restaurantIDB);
-  console.log(self.restaurantsPromise);
-  self.restaurantsPromise
-    .then(results => {
-      console.log(results);
-      DBHelper.fetchNeighborhoods(results, fetchNeighborhoods);
-      DBHelper.fetchCuisines(results, fetchCuisines);
-      updateRestaurants();
-    })
-    .catch(err => console.error(err));
+  if (window.location.pathname == '/') {
+    self.restaurantsPromise = DBHelper.fetchRestaurants(self.restaurantIDB);
+    self.restaurantsPromise
+      .then(results => {
+        DBHelper.fetchNeighborhoods(results, fetchNeighborhoods);
+        DBHelper.fetchCuisines(results, fetchCuisines);
+        updateRestaurants();
+      })
+      .catch(err => console.error(err));
+  }
 });
 
 /**
  * Fetch all neighborhoods and set their HTML.
  */
 const fetchNeighborhoods = (error, neighborhoods) => {
-  console.log('fetchNeighborhoods: error: ', error);
-  console.log('fetchNeighborhoods: neighborhoods: ', neighborhoods);
   if (error) { // Got an error
     console.error(error);
   } else {
@@ -68,8 +72,6 @@ const fillNeighborhoodsHTML = (neighborhoods = self.neighborhoods) => {
  * Fetch all cuisines and set their HTML.
  */
 const fetchCuisines = (error, cuisines) => {
-  console.log('fetchCuisines: error: ', error);
-  console.log('fetchCuisines: cuisines: ', cuisines);
   if (error) { // Got an error!
     console.error(error);
   } else {
@@ -89,16 +91,47 @@ const fillCuisinesHTML = (cuisines = self.cuisines) => {
  * Initialize Google map, called from HTML.
  */
 window.initMap = () => {
-  let loc = {
-    lat: 40.722216,
-    lng: -73.987501
-  };
-  self.map = new google.maps.Map(document.getElementById('map'), {
-    zoom: 12,
-    center: loc,
-    scrollwheel: false
-  });
-  updateRestaurants();
+  const pathname = window.location.pathname;
+  if (pathname == '/') {
+    let loc = {
+      lat: 40.722216,
+      lng: -73.987501
+    };
+    self.map = new google.maps.Map(document.getElementById('map'), {
+      zoom: 12,
+      center: loc,
+      scrollwheel: false
+    });
+    updateRestaurants();
+  } else if (pathname == '/restaurant.html') {
+    fetchRestaurantFromURL((error, restaurant) => {
+      if (error) { // Got an error!
+        console.error(error);
+      } else {
+        self.map = new google.maps.Map(document.getElementById('map'), {
+          zoom: 16,
+          center: restaurant.latlng,
+          scrollwheel: false
+        });
+        fillBreadcrumb();
+        DBHelper.mapMarkerForRestaurant(self.restaurant, self.map);
+      }
+
+      /**
+       * Listen for when user clicks "More details".
+       */
+      const offset = 209;
+      const buttonScrollThreshold = 15;
+      self.restaurantNameEl = document.getElementById('restaurant-name-container');
+      self.scrollButton = new ScrollButton(self.restaurantNameEl, 'as-button', self.maxMobileRes, buttonScrollThreshold, offset);
+
+      setRestaurantNameWidth();
+
+      window.addEventListener('resize', () => {
+        setRestaurantNameWidth();
+      });
+    });
+  }
 };
 
 /**
