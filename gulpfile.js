@@ -18,10 +18,12 @@ const scriptBundle = [
   'js/app-name.js',
   'node_modules/idb/lib/idb.js',
   'js/myidb.js',
+  'js/toggle-button.js',
   'js/dbhelper.js',
   'js/custom-select.js',
   'js/picture-el-builder.js',
   'js/scroll-button.js',
+  'js/restaurant.js',
   'js/restaurant_info.js',
   'js/main.js'];
 

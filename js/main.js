@@ -1,5 +1,5 @@
 
-/*global DBHelper, fillCustomSelectBox, google, buildPictureEl MyIDB appName fetchRestaurantFromURL fillBreadcrumb setRestaurantNameWidth ScrollButton*/
+/*global DBHelper, fillCustomSelectBox, google, buildPictureEl MyIDB appName fetchRestaurantFromURL fillBreadcrumb setRestaurantNameWidth ScrollButton ToggleButton Restaurant*/
 
 /* main page */
 self.restaurantsPromise;
@@ -9,6 +9,9 @@ self.neighborhoods;
 self.cuisines;
 self.map;
 self.markers = [];
+
+
+self.restaurantEls = [];
 
 /* restaurant info page */
 self.scrollButton;
@@ -65,7 +68,7 @@ const fetchNeighborhoods = (error, neighborhoods) => {
  * Set neighborhoods HTML.
  */
 const fillNeighborhoodsHTML = (neighborhoods = self.neighborhoods) => {
-  fillCustomSelectBox(neighborhoods, 'neighborhoods-select', 'neighborhoods-select-button', 'Filter results by neighborhoods', updateRestaurants);
+  fillCustomSelectBox(neighborhoods, 'neighborhoods-select', 'neighborhoods-select-button', 'Filter results by neighborhoods', filterRestaurants);
 };
 
 /**
@@ -84,7 +87,7 @@ const fetchCuisines = (error, cuisines) => {
  * Set cuisines HTML.
  */
 const fillCuisinesHTML = (cuisines = self.cuisines) => {
-  fillCustomSelectBox(cuisines, 'cuisines-select', 'cuisines-select-button', 'Filter results by cuisines', updateRestaurants);
+  fillCustomSelectBox(cuisines, 'cuisines-select', 'cuisines-select-button', 'Filter results by cuisines', filterRestaurants);
 };
 
 /**
@@ -102,7 +105,14 @@ window.initMap = () => {
       center: loc,
       scrollwheel: false
     });
-    updateRestaurants();
+    self.restaurantsPromise
+      .then(results => {
+        addMarkersToMap(results);
+      })
+      .catch(error => {
+        console.error(error);
+      });
+    // updateRestaurants();
   } else if (pathname == '/restaurant.html') {
     fetchRestaurantFromURL((error, restaurant) => {
       if (error) { // Got an error!
@@ -138,16 +148,30 @@ window.initMap = () => {
  * Update page and map for current restaurants.
  */
 const updateRestaurants = () => {
+  self.restaurantsPromise
+    .then(results => {
+      resetRestaurants(results);
+      fillRestaurantsHTML();
+    })
+    .catch(error => {
+      console.error(error);
+    });
+};
+
+const filterRestaurants = () => {
   const cuisine = document.getElementById('cuisines-select-button').getAttribute('value');
   const neighborhood = document.getElementById('neighborhoods-select-button').getAttribute('value');
-  DBHelper.fetchRestaurantByCuisineAndNeighborhood(self.restaurantsPromise, cuisine, neighborhood, (error, restaurants) => {
-    if (error) { // Got an error!
-      console.error(error);
+  for (let restaurant of self.restaurantEls) {
+    if (
+      (cuisine == 'all' || restaurant.data.cuisine_type == cuisine)
+      &&
+      (neighborhood == 'all' || restaurant.data.neighborhood == neighborhood)
+    ) {
+      restaurant.el.removeAttribute('style');
     } else {
-      resetRestaurants(restaurants);
-      fillRestaurantsHTML();
+      restaurant.el.style.display = 'none';
     }
-  });
+  }
 };
 
 /**
@@ -170,24 +194,46 @@ const resetRestaurants = (restaurants) => {
  */
 const fillRestaurantsHTML = (restaurants = self.restaurants) => {
   const ul = document.getElementById('restaurants-list');
-  let i = 0;
   restaurants.forEach(restaurant => {
-    ul.append(createRestaurantHTML(restaurant, i));
-    i += 1;
+    ul.append(createRestaurantHTML(restaurant));
   });
   addMarkersToMap();
+};
+
+const favoriteButtonClicked = (id, shouldToggleOn) => {
+  console.log(`"${id}" was toggled ${shouldToggleOn ? 'on' : 'off'}`);
+
+  self.restaurantIDB.getItem(id)
+    .then(data => {
+      data.is_favorite = shouldToggleOn;
+      return self.restaurantIDB.update(data);
+    })
+    .then(() => {
+      console.log('fav updated successfully');
+    })
+    .catch(err => console.log(err));
+
+  fetch(`http://localhost:1337/restaurants/${id}/?is_favorite=${shouldToggleOn ? 'true' : 'false'}`,
+    {
+      method: 'PUT',
+      mode: 'cors'
+    })
+    .then(resp => {
+      console.log(resp);
+    })
+    .catch(err => console.log(err));
 };
 
 /**
  * Create restaurant HTML.
  */
-const createRestaurantHTML = (restaurant, i) => {
+const createRestaurantHTML = (restaurant) => {
   const li = document.createElement('li');
 
   li.append(buildPictureEl(restaurant, restaurantThumbs));
   li.setAttribute('aria-labelledby', 'restaurant-list-items');
 
-  const nameid = `restaurant-name-${i}`;
+  const nameid = `restaurant-name-${restaurant.id}`;
   const name = document.createElement('h4');
   name.setAttribute('id', nameid);
   name.innerHTML = restaurant.name;
@@ -201,12 +247,58 @@ const createRestaurantHTML = (restaurant, i) => {
   address.innerHTML = restaurant.address;
   li.append(address);
 
+  const favLabelID = `favorite-label-${restaurant.id}`;
+
+  const favLabel = document.createElement('label');
+  favLabel.setAttribute('id', favLabelID);
+  favLabel.innerHTML = `Mark ${restaurant.name} as a favorite restaurant`;
+  favLabel.style.display = 'none';
+  li.append(favLabel);
+
+  const favorite = document.createElement('button');
+  favorite.classList.add('blank-button');
+  const favContents = document.createElement('div');
+  favorite.setAttribute('role', 'checkbox');
+  favorite.append(favContents);
+  favorite.setAttribute('aria-labelledby', favLabelID);
+  li.append(favorite);
+  console.log(`${restaurant.name}: ${restaurant.is_favorite}`);
+
+  let isOn = restaurant.is_favorite;
+  if (isOn == 'false') {
+    isOn = false;
+  } else if (isOn == 'true') {
+    isOn = true;
+  }
+
+  new ToggleButton(
+    favorite,
+    favContents,
+    restaurant.id,
+    favoriteButtonClicked,
+    'star-active',
+    'star-inactive',
+    'star-inactive-focused',
+    'star-active-focused',
+    isOn);
+
+  const moreLebelID = `more-label-${restaurant.id}`;
+
+  const moreLabel = document.createElement('label');
+  moreLabel.setAttribute('id', moreLebelID);
+  moreLabel.innerHTML = `View details about ${restaurant.name}`;
+  moreLabel.style.display = 'none';
+  li.append(moreLabel);
+
   const more = document.createElement('button');
+  more.classList.add('more-details-btn');
   more.innerHTML = 'View Details';
-  more.setAttribute('aria-labelledby', `restaurant-list-items ${nameid}`);
+  more.setAttribute('aria-labelledby', moreLebelID);
   more.setAttribute('onclick', `location.href='${DBHelper.urlForRestaurant(restaurant)}';`);
   more.setAttribute('tabindex', '0');
   li.append(more);
+
+  self.restaurantEls.push(new Restaurant(restaurant, li));
 
   return li;
 };
