@@ -16,13 +16,13 @@
     <meta name="theme-color" content="#ffffff">
     <!-- Install the service worker -->
     <script type="application/javascript" charset="utf-8">
-/*      if ('serviceWorker' in navigator) {
+      if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/sw.js').then(() => {
           console.log('service worker registered successfully');
-        }).catch( () => {
-          console.log('service worker registration FAILED');
+        }).catch( error => {
+          console.error('service worker registration FAILED', error);
         });
-      }*/
+      }
     </script>
     <!-- Normalize.css for better cross-browser consistency -->
     <link rel="stylesheet" src="//normalize-css.googlecode.com/svn/trunk/normalize.css" />
@@ -49,8 +49,7 @@
           <h2 class="filter-lbl">Filter Results:</h2>
           <label class="offscreen-heading" id="neighborhoods-select-lbl">by neighborhoods</label>
           <div class="custom-select-container">
-            <button          role="combobox"
-                    aria-haspopup="listbox"
+            <button aria-haspopup="listbox"
                                id="neighborhoods-select-button"
                             value="all"
                        aria-label="Filter results by neighborhoods: All Neighborhoods">
@@ -64,8 +63,7 @@
           </div>
           <label class="offscreen-heading" id="cuisines-select-lbl">by cuisines</label>
           <div class="custom-select-container">
-            <button          role="combobox"
-                    aria-haspopup="listbox"
+            <button aria-haspopup="listbox"
                                id="cuisines-select-button"
                             value="all"
                        aria-label="Filter results by cuisines: All Cuisines">
@@ -85,8 +83,6 @@
 
     <!-- Beginning scripts -->
     <script type="application/javascript" charset="utf-8" src="js/script-bundle.js"></script>
-    <!-- Google Maps -->
-    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC4VQB1Ok9qXO6yhZ5RC6SRPdmMp24FkEY&v=3&libraries=places&callback=initMap"></script>
     <!-- End scripts -->
 
 

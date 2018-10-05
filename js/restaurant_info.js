@@ -1,7 +1,16 @@
-/* global DBHelper buildPictureEl */
+/* global
+DBHelper
+buildPictureEl
+Review
+getViewByID
+showSnackbar
+addFavoriteButton */
 
 self.restaurant;
 self.map;
+self.reviews = [];
+self.newReview;
+self.newReviewInProgress = false;
 
 /**
  * New thumb images are served according to the follwing criteria:
@@ -25,54 +34,44 @@ const restaurantImgSizes = [
 /**
  * Get current restaurant from page URL.
  */
-const fetchRestaurantFromURL = (callback) => { // eslint-disable-line no-unused-vars
+const fetchRestaurantFromURL = (idbCallback, networkCallback) => { // eslint-disable-line no-unused-vars
   if (self.restaurant) { // restaurant already fetched!
-    callback(null, self.restaurant);
+    networkCallback(self.restaurant);
     return;
   }
   const id = getParameterByName('id');
   if (!id) { // no id found in URL
     const error = 'No restaurant id in URL';
-    callback(error, null);
+    networkCallback(null, error);
   } else {
-    DBHelper.fetchRestaurantById(self.restaurantIDB, id)
-      .then(restaurant => {
-        self.restaurant = restaurant;
-        fillRestaurantHTML();
-        callback(null, restaurant);
-      })
-      .catch(err => console.error(err));
+    DBHelper.fetchRestaurantById(self.restaurantIDB, id, idbCallback, networkCallback);
   }
 };
 
 /**
  * Create restaurant HTML and add it to the webpage
  */
-const fillRestaurantHTML = (restaurant = self.restaurant) => {
+const fillRestaurantHTML = (restaurant) => { // eslint-disable-line no-unused-vars
   const name = document.getElementById('restaurant-name');
   name.innerHTML = restaurant.name;
+  const favButtonContainer = document.getElementById('favorite-button-container');
+
+  addFavoriteButton(restaurant, favButtonContainer, 'star-inactive', 'star-active');
 
   const address = document.getElementById('restaurant-address');
   address.innerHTML = restaurant.address;
 
   const imageContainer = document.getElementById('restaurant-img-container');
-  imageContainer.append(buildPictureEl(restaurant, restaurantImgSizes));
+  imageContainer.appendChild(buildPictureEl(restaurant, restaurantImgSizes));
 
   const cuisine = document.getElementById('restaurant-cuisine');
   cuisine.innerHTML = restaurant.cuisine_type;
-
-  // fill operating hours
-  if (restaurant.operating_hours) {
-    fillRestaurantHoursHTML();
-  }
-  // fill reviews
-  fillReviewsHTML();
 };
 
 /**
  * Create restaurant operating hours HTML table and add it to the webpage.
  */
-const fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hours) => {
+const fillRestaurantHoursHTML = (operatingHours) => { // eslint-disable-line no-unused-vars
   const hours = document.getElementById('restaurant-hours');
   for (let key in operatingHours) {
     const row = document.createElement('tr');
@@ -92,53 +91,196 @@ const fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hour
 /**
  * Create all reviews HTML and add them to the webpage.
  */
-const fillReviewsHTML = (reviews = self.restaurant.reviews) => {
-  const container = document.getElementById('reviews-container');
-  const title = document.createElement('h3');
-  title.innerHTML = 'Reviews';
-  container.appendChild(title);
+const fillReviewsHTML = (reviews) => { // eslint-disable-line no-unused-vars
 
-  if (!reviews) {
+  if (!document.getElementById('review-section-title')) {
+    const container = document.getElementById('reviews-container');
+    const title = document.createElement('h3');
+    title.setAttribute('id', 'review-section-title');
+    title.innerHTML = 'Reviews';
+    container.prepend(title);
+
+    const newReviewButton = document.createElement('button');
+    newReviewButton.classList = 'add-review-button';
+    newReviewButton.setAttribute('onclick', 'showNewReviewForm()');
+    newReviewButton.innerHTML = 'Add Review';
+    container.prepend(newReviewButton);
+  }
+
+  const ul = document.getElementById('reviews-list');
+
+  if (reviews && reviews.length) {
+    for (const review of reviews) {
+      const reviewView = getViewByID(self.reviews, review.id);
+      if (reviewView) {
+        reviewView.update(review); 
+      } else {
+        const reviewEl = document.createElement('li');
+        self.reviews.push(new Review(
+          reviewEl,
+          ul,
+          review.restaurant_id,
+          addNewReview,
+          updateReview,
+          deleteReview,
+          review));
+      }
+    }
+    sortReviewsByDate();
+  } else if (!self.reviews.length) {
+    addEmptyReviewPlaceholder();
+  }
+  if (self.reviews.length) removeEmptyReviewPlaceholder();
+};
+
+const addEmptyReviewPlaceholder = () => {
+  if (!document.getElementById('empty-review-placeholder')) {
+    const ul = document.getElementById('reviews-list');
+    const reviewEl = document.createElement('li');
+    reviewEl.className = 'review-item';
+    reviewEl.setAttribute('id', 'empty-review-placeholder');
     const noReviews = document.createElement('p');
     noReviews.innerHTML = 'No reviews yet!';
-    container.appendChild(noReviews);
-    return;
+    reviewEl.appendChild(noReviews);
+    ul.appendChild(reviewEl);
   }
-  const ul = document.getElementById('reviews-list');
-  reviews.forEach(review => {
-    ul.appendChild(createReviewHTML(review));
+};
+
+
+const removeEmptyReviewPlaceholder = () => {
+  const emptyReview = document.getElementById('empty-review-placeholder');
+  if (emptyReview) emptyReview.parentNode.removeChild(emptyReview);
+};
+
+/**
+ * Update ordering so newest appear at the top.
+ */
+const sortReviewsByDate = () => {
+  const currentOrder = () => JSON.stringify(self.reviews.map(r => r.id));
+  const before = currentOrder();
+  self.reviews.sort((rev1, rev2) => {
+    const [a, b] = [rev1.data.createdAt, rev2.data.createdAt];
+    if      (a > b)   { return -1; }
+    else if (a < b)   { return  1; }
+    else if (a === b) { return  0; }
   });
-  container.appendChild(ul);
+
+  // If no change, no need to update.
+  if (self.reviews.length > 1 && before !== currentOrder()) {
+    for (let i = 0; i < self.reviews.length; i++) {
+      const liEls = document.getElementsByClassName('review-item');
+      const r = self.reviews;
+      r[i].li.parentNode.insertBefore(r[i].li, liEls[i]);
+    }
+  }
 };
 
 /**
- * Create review HTML and add it to the webpage.
+ * Show a form for adding a new review.
  */
-const createReviewHTML = (review) => {
-  const li = document.createElement('li');
-  const name = document.createElement('p');
-  name.innerHTML = review.name;
-  li.appendChild(name);
-
-  const date = document.createElement('p');
-  date.innerHTML = review.date;
-  li.appendChild(date);
-
-  const rating = document.createElement('p');
-  rating.innerHTML = `Rating: ${review.rating}`;
-  li.appendChild(rating);
-
-  const comments = document.createElement('p');
-  comments.innerHTML = review.comments;
-  li.appendChild(comments);
-
-  return li;
+window.showNewReviewForm = () => { // eslint-disable-line no-unused-vars
+  if (self.newReviewInProgress) {
+    self.newReview.submit();
+  } else {
+    self.newReviewInProgress = true;
+    const ul = document.getElementById('reviews-list');
+    const reviewEl = document.createElement('li');
+    reviewEl.setAttribute('id', 'new-review-form');
+    const restaurantID = parseInt(getParameterByName('id'));
+    self.newReview = new Review(
+      reviewEl,
+      ul,
+      restaurantID,
+      addNewReview);
+  }
 };
 
 /**
- * Add restaurant name to the breadcrumb navigation menu
+ * Create a brand new review.
  */
-const fillBreadcrumb = (restaurant = self.restaurant) => { // eslint-disable-line no-unused-vars
+const addNewReview = (restaurant_id, data) => {
+  self.newReviewInProgress = false;
+  self.newReview = undefined;
+  const newReviewForm = document.getElementById('new-review-form');
+  newReviewForm.parentNode.removeChild(newReviewForm);
+  if (!restaurant_id || !data) return;
+  DBHelper.createReview(self.reviewIDB, restaurant_id, data, (review, error, type) => {
+    if (review) {
+      const ul = document.getElementById('reviews-list');
+      const reviewEl = document.createElement('li');
+      self.reviews.push(new Review(
+        reviewEl,
+        ul,
+        review.restaurant_id,
+        addNewReview,
+        updateReview,
+        deleteReview,
+        review));
+      removeEmptyReviewPlaceholder();
+      sortReviewsByDate();
+      if (type === 'NETWORK') showSnackbar('Review added.', 4);
+    }
+    if (error) {
+      showSnackbar('No connection. Post will be submitted when connection is restored.', 10);
+      console.error(error);
+    }
+  });
+};
+
+/**
+ * Update existing review with new data.
+ */
+const updateReview = (review_id, data) => {
+  DBHelper.updateReview(self.reviewIDB, review_id, data, (review, error, type) => {
+    if (review) {
+      const reviewView = getViewByID(self.reviews, review.id);
+      if (reviewView) reviewView.update(review);
+      sortReviewsByDate();
+      if (type === 'NETWORK') showSnackbar('Review updated.', 4);
+    } else {
+      showSnackbar('No connection. Post will be updated when connection is restored.', 10);
+      console.error(error);
+    }
+  });
+};
+
+/**
+ * Delete review.
+ */
+const deleteReview = (review_id) => {
+  const reviewView = getViewByID(self.reviews, review_id);
+  if (reviewView) {
+    reviewView.ul.removeChild(reviewView.li);
+    const index = self.reviews.indexOf(reviewView);
+    self.reviews.splice(index, 1);
+    if (self.reviews.length === 0) addEmptyReviewPlaceholder();
+  }
+  DBHelper.deleteReview(self.reviewIDB, review_id, (review, error, type) => {
+    if (error) {
+      showSnackbar('No connection. Post will be removed when connection is restored.', 10);
+      console.error(error);
+    } else {
+      if (type === 'NETWORK') showSnackbar('Review deleted.', 4);
+    }
+  });
+};
+
+/**
+ * Update review after network connection is restored.
+ */
+const updateReviewAfterNetworkReestablished = (networkResult, offlineID) => { // eslint-disable-line no-unused-vars
+  const id = offlineID === undefined
+    ? networkResult.id
+    : offlineID;
+  const reviewView = getViewByID(self.reviews, id);
+  if (reviewView) reviewView.update(networkResult);
+  showSnackbar('Connection restored. Queued data submitted successfully.', 6);
+};
+
+/**
+ * Add restaurant name to the breadcrumb navigation menu.
+ */
+const fillBreadcrumb = (restaurant) => { // eslint-disable-line no-unused-vars
   const breadcrumb = document.getElementById('breadcrumb');
   const li = document.createElement('li');
   li.innerHTML = restaurant.name;
@@ -163,13 +305,13 @@ const getParameterByName = (name, url = window.location.href) => {
  * Adjust restaurant name width so elipses is added correctly.
  */
 const setRestaurantNameWidth = () => { // eslint-disable-line no-unused-vars
-  document.getElementById('restaurant-name').style.width = `${window.innerWidth-20}px`;
+  document.getElementById('restaurant-name').style.width = `${window.innerWidth-68}px`;
 };
 
 /**
  * Handle accessibility button "Skip to main content".
  */
-const skipToMainContent = () => { // eslint-disable-line no-unused-vars
+window.skipToMainContent = () => { // eslint-disable-line no-unused-vars
   if (window.innerWidth < self.maxMobileRes) {
     self.scrollButton.executeScroll();
   } else {

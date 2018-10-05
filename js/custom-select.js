@@ -102,7 +102,7 @@ class CustomSelect {
     this.el.textContent = el.textContent;
     this.el.setAttribute('value', el.getAttribute('value'));
     this.el.setAttribute('aria-label', `${this.ariaLblPrefix}: ${el.textContent}`);
-    this.callback();
+    if (this.callback) this.callback(el.textContent);
   }
 
   setActiveDescendant(el) {

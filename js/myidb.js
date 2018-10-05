@@ -1,5 +1,4 @@
 
-
 /**
  * Implements an IndexedDB instance.
  * Dependency: `idb` (https://www.npmjs.com/package/idb).
@@ -12,82 +11,89 @@
  */
 class MyIDB { // eslint-disable-line no-unused-vars
 
-  constructor(dbName, dbStoreName, dbVersion, primaryKey, dateKey, limit) {
+  constructor(dbName, dbStoreName, dbVersion, primaryKey, indices, dateKey, limit) {
     this.dbName        = dbName;
     this.dbStoreName   = dbStoreName;
     this.dbVersion     = dbVersion;
     this.primaryKey    = primaryKey;
+    this.indices       = indices;
     this.dateKey       = dateKey;
     this.limit         = limit;
-    this.items         = []; // Allows items to be saved even if IndexedDB isn't supported.
     this.dbPromise     = this.open();
   }
 
+  _upgradeDB(upgradeDb) {
+    const store = upgradeDb.createObjectStore(this.dbStoreName, { keyPath: this.primaryKey });
+    if (this.dateKey && this.limit) {
+      store.createIndex('by-date', this.dateKey);
+    }
+
+    for (let index of this.indices) {
+      store.createIndex(index, index);
+    }
+  }
+
   open() {
-    if (!navigator.serviceWorker) return Promise.resolve();
+    if (!self.idb) return Promise.resolve();
     return self.idb.open(this.dbName, this.dbVersion, upgradeDb => {
       switch (upgradeDb.oldVersion) {
       case 0:
-        upgradeDb
-          .createObjectStore(this.dbStoreName, { keyPath: this.primaryKey })
-          .createIndex('by-date', this.dateKey);
+        this._upgradeDB(upgradeDb);
       }
     });
   }
 
   update(data) {
-    // Add to buffer in case IndexedDB isn't supported.
-    const items = this.addToBuffer(data);
-
-    for (const item of items) {
-      const result = this.getItemFromBuffer(item[this.primaryKey]);
-      if (result.length === 0) {
-        // console.log('adding to buffer: ', item);
-        this.items.push(item);
-      }
-    }
+    const items = this._makeArrayIfNot(data);
 
     return this.dbPromise.then(db => {
       if (!db) return Promise.resolve();
 
-      const store = db
+      const tx = db
         .transaction(this.dbStoreName, 'readwrite')
         .objectStore(this.dbStoreName);
 
       for (let item of items) {
-        store.put(item);
+        tx.put(item);
       }
-
-      // limit to the specified number of items
-      return store
-        .index('by-date')
-        .openCursor(null, 'prev')
-        .then(cursor => {
-          return cursor.advance(this.limit);
-        }).then(function deleteRest(cursor) {
-          if (!cursor) return;
-          cursor.delete();
-          return cursor
-            .continue()
-            .then(deleteRest);
-        });
+      return tx.complete;
     });
   }
 
-  addToBuffer(data) {
-    const items = this._makeArrayIfNot(data);
-    for (const item of items) {
-      const result = this.getItemFromBuffer(item[this.primaryKey]);
-      if (result.length === 0) {
-        // console.log('adding to buffer: ', item);
-        this.items.push(item);
-      }
-    }
-    return items;
+  swap(newData, oldKey) {
+    return this.dbPromise.then(db => {
+      if (!db) return Promise.resolve();
+
+      const tx = db
+        .transaction(this.dbStoreName, 'readwrite')
+        .objectStore(this.dbStoreName);
+      tx.delete(oldKey);
+      tx.put(newData);
+      return tx.complete;
+    });
   }
 
-  getItemFromBuffer(key) {
-    return this.items.filter(r => r[this.primaryKey] == key);
+  remove(key) {
+    return this.dbPromise.then(db => {
+      if (!db) return Promise.resolve();
+
+      const tx = db
+        .transaction(this.dbStoreName, 'readwrite');
+      tx.objectStore(this.dbStoreName).delete(key);
+      return tx.complete;
+    });
+  }
+
+  getOnIndex(index, key) {
+    return this.dbPromise.then(db => {
+      if (!db) return Promise.resolve();
+      const tx = db
+        .transaction(this.dbStoreName)
+        .objectStore(this.dbStoreName);
+      return tx
+        .index(index)
+        .getAll(key);
+    });
   }
 
   _makeArrayIfNot(data) {
@@ -98,15 +104,6 @@ class MyIDB { // eslint-disable-line no-unused-vars
 
   getItem(key, shouldGetAll) {
     return this.dbPromise.then(db => {
-      if (this.items.length !== 0) {
-        if (shouldGetAll) {
-          // console.log('get ALL from buffer: ', this.items);
-          return Promise.resolve(this.items);
-        }
-        const result = this.getItemFromBuffer(key);
-        // console.log(`get id: ${key} from buffer: `, result);
-        return Promise.resolve(result.length > 0 ? result[0] : undefined);
-      }
       if (!db) return Promise.resolve();
       const tx = db
         .transaction(this.dbStoreName)
@@ -116,7 +113,7 @@ class MyIDB { // eslint-disable-line no-unused-vars
     });
   }
 
-  getItems() {
+  getAllItems() {
     return this.getItem(null, true);
   }
 }

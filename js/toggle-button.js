@@ -35,12 +35,12 @@ class ToggleButton { // eslint-disable-line no-unused-vars
     this.hoverActiveCls = hoverActiveCls;
     this.isOn = isOn;
 
-    this.classList = contentEl.classList;
+    this.contentEl = contentEl;
 
     if (isOn) {
-      this.classList.add(activeCls);
+      this.contentEl.setAttribute('class', activeCls);
     } else {
-      this.classList.add(inactiveCls);
+      this.contentEl.setAttribute('class', inactiveCls);
     }
 
     this.buttonEl.addEventListener('click', this.handleClick.bind(this), true);
@@ -49,6 +49,11 @@ class ToggleButton { // eslint-disable-line no-unused-vars
     this.buttonEl.addEventListener('keydown', this.handleKeyDown.bind(this), true);
     this.buttonEl.addEventListener('focus', this.mouseenter.bind(this), true);
     this.buttonEl.addEventListener('blur', this.mouseleave.bind(this), true);
+  }
+
+  update(state) {
+    this.isOn = state;
+    this.shouldToggleOn(state);
   }
 
   handleClick(originIsKeyboard) {
@@ -61,11 +66,8 @@ class ToggleButton { // eslint-disable-line no-unused-vars
   }
 
   toggle(shouldToggleOn, originIsKeyboard=false) {
-    let oldClass, newClass;
+    let newClass;
     if (shouldToggleOn) {
-      oldClass = this.classList.contains(this.inactiveCls)
-        ? this.inactiveCls
-        : this.hoverInactiveCls;
       newClass = originIsKeyboard
         ? this.hoverActiveCls
         : this.activeCls;
@@ -73,27 +75,26 @@ class ToggleButton { // eslint-disable-line no-unused-vars
       newClass = originIsKeyboard
         ? this.hoverInactiveCls
         : this.inactiveCls;
-      oldClass = this.hoverActiveCls;
     }
-    this.classList.replace(oldClass, newClass);
+    if (newClass) this.contentEl.setAttribute('class', newClass);
   }
 
   hover(shouldHighlight) {
-    let oldClass, newClass;
+    let newClass;
     if (shouldHighlight) {
       if (this.isOn) {
-        [oldClass, newClass] = [this.activeCls, this.hoverActiveCls];
+        newClass = this.hoverActiveCls;
       } else {
-        [oldClass, newClass] = [this.inactiveCls, this.hoverInactiveCls];
+        newClass = this.hoverInactiveCls;
       }
     } else {
       if (this.isOn) {
-        [oldClass, newClass] = [this.hoverActiveCls, this.activeCls];
+        newClass = this.activeCls;
       } else {
-        [oldClass, newClass] = [this.hoverInactiveCls, this.inactiveCls];
+        newClass = this.inactiveCls;
       }
     }
-    this.classList.replace(oldClass, newClass);
+    if (newClass) this.contentEl.setAttribute('class', newClass);
   }
 
   mouseenter() { this.hover(true); }

@@ -69,11 +69,14 @@ class ScrollButton { // eslint-disable-line no-unused-vars
   toggleState() {
     this.shouldBeOn = !this.shouldBeOn;
     if (this.shouldBeOn) {
-      this.el.classList.add(this.asButtonClass);
+      const currentClasses = this.el.getAttribute('class');
+      this.el.setAttribute('class', `${currentClasses} ${this.asButtonClass}`);
       this.el.setAttribute('role', 'button');
       this.el.setAttribute('tabindex', '0');
     } else {
-      this.el.classList.remove(this.asButtonClass);
+      let currentClasses = this.el.getAttribute('class');
+      currentClasses = currentClasses.replace(this.asButtonClass, '');
+      this.el.setAttribute('class', currentClasses);
       this.el.removeAttribute('role');
       if (!this.buttonWasPressed) {
         this.el.setAttribute('tabindex', '-1');
@@ -83,7 +86,11 @@ class ScrollButton { // eslint-disable-line no-unused-vars
 
   executeScroll() {
     this.buttonWasPressed = true;
-    window.scrollBy({ 'behavior': 'smooth', 'top': this.calcDestination() });
+    try {
+      window.scrollBy({ 'behavior': 'smooth', 'top': this.calcDestination() });
+    } catch(error) {
+      window.scrollBy(0, this.calcDestination());
+    }
   }
 
   handleKeyDown(e) {

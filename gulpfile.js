@@ -2,7 +2,7 @@
 const gulp         = require('gulp');
 const autoprefixer = require('gulp-autoprefixer');
 const browserSync  = require('browser-sync').create();
-const sass         = require('gulp-sass');
+const scss         = require('gulp-sass');
 const eslint       = require('gulp-eslint');
 const jasmine      = require('gulp-jasmine-phantom');
 const concat       = require('gulp-concat');
@@ -12,11 +12,17 @@ const sourcemaps   = require('gulp-sourcemaps');
 const clean        = require('gulp-clean');
 const runSequence  = require('run-sequence');
 const imagemin     = require('gulp-imagemin');
-// const inline       = require('gulp-inline');
+const inject       = require('gulp-inject-string');
+var header         = require('gulp-header');
+const fs           = require('fs');
+const util         = require('util');
+const readFile     = util.promisify(fs.readFile);
+
+const idbPromise = readFile('./node_modules/idb/lib/idb.js', 'utf8');
+const polyfillPromise = readFile('./js-header/header.js', 'utf8');
 
 const scriptBundle = [
   'js/app-name.js',
-  'node_modules/idb/lib/idb.js',
   'js/myidb.js',
   'js/toggle-button.js',
   'js/dbhelper.js',
@@ -24,6 +30,7 @@ const scriptBundle = [
   'js/picture-el-builder.js',
   'js/scroll-button.js',
   'js/restaurant.js',
+  'js/review.js',
   'js/restaurant_info.js',
   'js/main.js'];
 
@@ -42,7 +49,7 @@ gulp.task('serve', ['styles'], () => {
     port: 8000
   });
 
-  gulp.watch('sass/*.scss', ['styles']);
+  gulp.watch('scss/*.scss', ['styles']);
   gulp.watch('*.html', ['copy-html']);
   gulp.watch('js/*.js', ['scripts']);
 
@@ -53,17 +60,28 @@ gulp.task('serve', ['styles'], () => {
   gulp.watch('dist/js/*.js').on('change', browserSync.reload);
 });
 
-// Compile sass into CSS & auto-inject into browsers
+// Compile scss into CSS & auto-inject into browsers
 gulp.task('styles', () => {
-  return gulp.src('sass/*.scss')
+  return gulp.src('scss/*.scss')
     .pipe(sourcemaps.init())
-    .pipe(sass({outputStyle: 'compressed'}).on('error', sass.logError))
+    .pipe(scss({outputStyle: 'compressed'}).on('error', scss.logError))
     .pipe(autoprefixer({
       browsers: ['last 5 versions']
     }))
     .pipe(sourcemaps.write())
     .pipe(gulp.dest('dist/css'))
     .pipe(browserSync.stream());
+});
+
+gulp.task('styles-dist', () => {
+  return gulp.src('scss/*.scss')
+    // .pipe(sourcemaps.init())
+    .pipe(scss({outputStyle: 'compressed'}).on('error', scss.logError))
+    .pipe(autoprefixer({
+      browsers: ['last 5 versions']
+    }))
+    // .pipe(sourcemaps.write())
+    .pipe(gulp.dest('dist/css'));
 });
 
 gulp.task('lint', () => {
@@ -112,46 +130,52 @@ gulp.task('copy-data', () => {
     .pipe(gulp.dest('dist/data'));
 });
 
-const scripts = (paths, outputName, outputDir) => {
-  gulp.src(paths)
-    .pipe(sourcemaps.init())
-    .pipe(concat(outputName))
-    .pipe(sourcemaps.write())
-    .pipe(gulp.dest(outputDir));
-  // return gulp.src(['dist/index.html', 'dist/restaurants.html'])
-  // return gulp.src('dist/index.html')
-  //   .pipe(inline({
-  //     base: './',
-  //     disableTypes: ['svg', 'img', 'js']
-  //   }))
-  //   .pipe(gulp.dest('dist/'));
-};
-
 gulp.task('scripts', () => {
-  scripts(scriptBundle, 'script-bundle.js', 'dist/js');
-  return scripts(serviceWorker, 'sw.js', 'dist');
+  Promise.all([polyfillPromise, idbPromise])
+    .then(values => {
+      gulp.src(scriptBundle)
+        .pipe(sourcemaps.init())
+        .pipe(concat('script-bundle.js'))
+        // Wrap the script bundle in the polyfill check.
+        .pipe(header(`${values[0]}\n${values[1]}\n}\n`))
+        // Add the trailing curly brace.
+        .pipe(inject.append('\n};'))
+        .pipe(sourcemaps.write('../maps'))
+        .pipe(gulp.dest('dist/js'));
+
+      return gulp.src(serviceWorker)
+        .pipe(sourcemaps.init())
+        .pipe(concat('sw.js'))
+        .pipe(sourcemaps.write('maps'))
+        .pipe(sourcemaps.write())
+        .pipe(gulp.dest('dist'));
+    });
 });
 
-const scriptsDist = (paths, outputName, outputDir) => {
-  return gulp.src(paths)
-    .pipe(sourcemaps.init())
-    .pipe(babel({
-      presets: ['env']
-    }))
-    .pipe(concat(outputName))
-    .pipe(uglify())
-    .pipe(sourcemaps.write())
-    .pipe(gulp.dest(outputDir));
-};
-
 gulp.task('scripts-dist', () => {
-  scriptsDist(scriptBundle, 'script-bundle.js', 'dist/js');
-  return gulp.src(serviceWorker)
-    .pipe(sourcemaps.init())
-    .pipe(concat('sw.js'))
-    .pipe(uglify())
-    .pipe(sourcemaps.write())
-    .pipe(gulp.dest('dist'));
+  Promise.all([polyfillPromise, idbPromise])
+    .then(values => {
+      gulp.src(scriptBundle)
+        .pipe(sourcemaps.init())
+        .pipe(babel({
+          presets: ['env']
+        }))
+        .pipe(concat('script-bundle.js'))
+        // Wrap the script bundle in the polyfill check.
+        .pipe(header(`${values[0]}\n${values[1]}\n}\n`))
+        // Add the trailing curly brace.
+        .pipe(inject.append('\n};'))
+        .pipe(uglify())
+        .pipe(sourcemaps.write('../maps'))
+        .pipe(gulp.dest('dist/js'));
+
+      return gulp.src(serviceWorker)
+        .pipe(sourcemaps.init())
+        .pipe(concat('sw.js'))
+        .pipe(uglify())
+        .pipe(sourcemaps.write('maps'))
+        .pipe(gulp.dest('dist'));
+    });
 });
 
 gulp.task('clean', () => {
@@ -172,5 +196,5 @@ gulp.task('default', () => {
 });
 
 gulp.task('build-prod', () => {
-  runSequence('lint', 'clean', 'copy-images', ['copy-html', 'scripts-dist', 'styles', 'copy-favicons']);
+  runSequence('lint', 'clean', 'copy-images', ['copy-html', 'scripts-dist', 'styles-dist', 'copy-favicons']);
 });
