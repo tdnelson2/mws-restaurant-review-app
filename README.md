@@ -39,4 +39,4 @@ I completed this for the [Udacity Mobile Web Specialist Certification Course](ht
 * With the API running, run `gulp build-prod`.
 * `cd` into the `dist` directory.
 * Run `python3 -m http.server 8000`. (or `python -m SimpleHTTPServer 8000` for Python 2.x).
-* In Chrome dev tools, under the 'Audits' tab click 'Run audits'. With the exeption of 'SEO' and 'Best practices', scores should be > 90.
+* In Chrome dev tools, under the 'Audits' tab click 'Run audits'. With the exception of 'SEO' and 'Best practices', scores should be > 90.
