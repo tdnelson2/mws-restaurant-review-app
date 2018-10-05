@@ -52,8 +52,8 @@ if (browserSupportsAllFeatures()) {
 
 function main(err) {
 // The rest of the script bundle starts after this point
-// and will be contained within the `main` funciton.
-// The closing brackets will get injected at the end 
+// and will be contained within the `main` function.
+// The closing curly brace will get injected at the end 
 // of the script bundle.
 
 fetchGoogleMaps();
@@ -63,4 +63,4 @@ if (currentIndexedDB) {
   window.indexedDB = currentIndexedDB;
 // `idb` will get added here when gulp runs.
 // Trailing curly braces will also get added after `idb`
-// and at the end of the script bundle, to close `main()`.
+// and at the end of the script bundle to close `main()`.
