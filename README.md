@@ -19,12 +19,8 @@ I completed this for the [Udacity Mobile Web Specialist Certification Course](ht
   * ESLint: `npm install -g eslint`
   * sailsjs: `npm install sails -g`
 
-### API Setup
-* In a terminal `cd` to a directory where you want to install the API.
-* Run `git clone https://github.com/tdnelson2/mws-restaurant-stage-2-api.git`
-* `cd` into the API directory and run `npm install`
-* Run `node server` to start the API on port 1337.
-* Leave the API running during all development.
+### API
+The [API](https://github.com/tdnelson2/mws-restaurant-reviews-api-flask) is hosted on [timothynelson.me](https://timothynelson.me). Currently it only supports GET requests as POST/PUT/DELETE would require a user login and that's a bit beyond the scope of the project (a least for now). As such, when attempting to submit data to the API, it performs as if it were offline: The data gets stored in IndexedDB and a snackbar message informs the user that the network is unavailable and data will be submited once connectivity is restored.
 
 ### Project Setup
 * In a new terminal window, clone this repo to your machine.
@@ -33,10 +29,4 @@ I completed this for the [Udacity Mobile Web Specialist Certification Course](ht
 * Run `grunt` to build the responsive images.
 
 ### Development
-* With the API running, run `gulp` in the project directory. The page should automatically launch in your default browser. Modifying the `html`, `js` and `scss` files should cause the page to refresh automatically. Auditing in development mode will produce lower scores. See below for how to setup the project for auditing.
-
-### Auditing
-* With the API running, run `gulp build-prod`.
-* `cd` into the `dist` directory.
-* Run `python3 -m http.server 8000`. (or `python -m SimpleHTTPServer 8000` for Python 2.x).
-* In Chrome dev tools, under the 'Audits' tab click 'Run audits'. With the exception of 'SEO' and 'Best practices', scores should be > 90.
+* Run `gulp` in the project directory. The page should automatically launch in your default browser. Modifying the `html`, `js` and `scss` files should cause the page to refresh automatically. Auditing in development mode will produce lower scores. See below for how to setup the project for auditing.
