@@ -30,14 +30,14 @@ class DBHelper { // eslint-disable-line no-unused-vars
    * Restaurants Database URL.
    */
   static get RESTAURANTS_DATABASE_URL() {
-    return 'http://localhost:1337/restaurants';
+    return 'https://timothynelson.me/restaurant-reviews-api/restaurants';
   }
 
   /**
    * Restaurants Database URL.
    */
   static get REVIEWS_DATABASE_URL() {
-    return 'http://localhost:1337/reviews';
+    return 'https://timothynelson.me/restaurant-reviews-api/reviews';
   }
 
   /**
@@ -379,7 +379,15 @@ class DBHelper { // eslint-disable-line no-unused-vars
     const manageOffline = () => {
       myIDB.getItem(k.primaryKey)
         .then(result => {
-          if (result) {
+          if (k.useCase === DBHelper._dataSubmissionUseCase.CREATE) {
+            const primaryID = k.primaryKey
+              ? k.primaryKey
+              : 'UNPOSTED-' + JSON.stringify(k.data).hashCode();
+            k.data[k.primaryKeyName] = primaryID;
+            [k.data.isOnServer, k.data.isPosted, k.data.shouldDelete] = [+false, +false, +false];
+            myIDB.update(k.data);
+            callback(k.data, null, 'IDB');
+          } else if (result) {
             if (k.useCase === DBHelper._dataSubmissionUseCase.DELETE) {
               result.shouldDelete = +true;
               myIDB.update(result);
@@ -390,6 +398,7 @@ class DBHelper { // eslint-disable-line no-unused-vars
               myIDB.update(result);
               callback(result, null, 'IDB');
             } else if (k.useCase === DBHelper._dataSubmissionUseCase.UPDATE_FROM_BODY) {
+              console.log('should update db');
               for (const dataKey of Object.keys(k.data)) {
                 result[dataKey] = k.data[dataKey];
               }
@@ -397,18 +406,12 @@ class DBHelper { // eslint-disable-line no-unused-vars
               myIDB.update(result);
               callback(result, null, 'IDB');
             }
-          } else if (k.useCase !== DBHelper._dataSubmissionUseCase.DELETE) {
-            const primaryID = 'UNPOSTED-' + JSON.stringify(k.data).hashCode();
-            k.data[k.primaryKeyName] = primaryID;
-            [k.data.isOnServer, k.data.isPosted, k.data.shouldDelete] = [+false, +false, +false];
-            myIDB.update(k.data);
-            callback(k.data, null, 'IDB');
           }
         })
         .catch(err => callback(null, err, 'IDB'));
     };
 
-    if (DBHelper._dataSubmissionUseCase.DELETE
+    if (DBHelper._dataSubmissionUseCase.DELETE === k.useCase
         && k.primaryKey.startsWith('UNPOSTED-')
         && k.shouldUpdateDbIfNoNetwork) {
       manageOffline();

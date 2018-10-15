@@ -230,8 +230,8 @@ const addNewReview = (restaurant_id, data) => {
 /**
  * Update existing review with new data.
  */
-const updateReview = (review_id, data) => {
-  DBHelper.updateReview(self.reviewIDB, review_id, data, (review, error, type) => {
+const updateReview = (restaurant_id, review_id, data) => {
+  const performViewUpdate = (review, error, type) => {
     if (review) {
       const reviewView = getViewByID(self.reviews, review.id);
       if (reviewView) reviewView.update(review);
@@ -241,7 +241,18 @@ const updateReview = (review_id, data) => {
       showSnackbar('No connection. Post will be updated when connection is restored.', 10);
       console.error(error);
     }
-  });
+  };
+
+  console.log(review_id);
+  if (review_id.startsWith('UNPOSTED')) {
+    DBHelper.createReview(self.reviewIDB, restaurant_id, data, (review, error, type) => {
+      performViewUpdate(review, error, type);
+    }, true, true, review_id);
+  } else {
+    DBHelper.updateReview(self.reviewIDB, review_id, data, (review, error, type) => {
+      performViewUpdate(review, error, type);
+    });
+  }
 };
 
 /**

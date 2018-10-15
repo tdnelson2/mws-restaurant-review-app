@@ -304,11 +304,12 @@ class Review { // eslint-disable-line no-unused-vars
     data.name = this.sanitize(this.nameInput.value);
     data.rating = parseInt(this.ratingSelect.value) || 1;
     data.comments = this.sanitize(this.commentBox.value);
-    data.updatedAt = Date.now();
+    const updatedDate = new Date();
+    data.updatedAt = updatedDate.toISOString();
 
     if (this.data) {
       this.update(data);
-      this.updateReviewCallback(this.data.id, data);
+      this.updateReviewCallback(this.restaurantID, this.data.id, data);
       this.showReview();
     } else {
       data.createdAt = data.updatedAt;

@@ -3,6 +3,7 @@
 const cacheVersion = 1;
 
 const staticCacheName = `${appName}-v${cacheVersion}`;
+const contentImgCache = `images-${appName}-v${cacheVersion}`;
 
 self.addEventListener('install', event => {
   event.waitUntil(
@@ -25,10 +26,16 @@ self.addEventListener('fetch', event => {
   const requestUrl = new URL(event.request.url);
   const request = event.request;
 
-  if (request.method === 'GET' && requestUrl.port !== '1337') {
+  if (request.method === 'GET' && requestUrl.hostname !== 'timothynelson.me') {
     // Serve `restaurant.html` even when URL parameters are appended.
     if (requestUrl.origin === location.origin && requestUrl.pathname.startsWith('/restaurant.html')) {
       event.respondWith(caches.match('/restaurant.html'));
+      return;
+    }
+
+    // Serve responsive photos from cache regardless of width.
+    if (requestUrl.origin === location.origin && requestUrl.pathname.startsWith('/img/')) {
+      event.respondWith(servePhoto(request));
       return;
     }
 
@@ -39,7 +46,9 @@ self.addEventListener('fetch', event => {
         return (
           response || fetch(event.request).then(fetchResponse => {
             return caches.open(staticCacheName).then(cache => {
-              cache.put(event.request, fetchResponse.clone());
+              if (requestUrl.hostname !== 'maps.googleapis.com') {
+                cache.put(event.request, fetchResponse.clone());
+              }
               return fetchResponse;
             });
           }).catch(() => {
@@ -53,4 +62,23 @@ self.addEventListener('fetch', event => {
       })
     );
   }
+});
+
+
+const servePhoto = (request => {
+  const storageUrl = request.url.replace(/-\d+w\.jpg$/, '');
+
+  return caches.open(contentImgCache)
+    .then(cache => {
+      return cache.match(storageUrl)
+        .then(response => {
+          if (response) return response;
+
+          return fetch(request)
+            .then(networkResponse => {
+              cache.put(storageUrl, networkResponse.clone());
+              return networkResponse;
+            });
+        });
+    });
 });
