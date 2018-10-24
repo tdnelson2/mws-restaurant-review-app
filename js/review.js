@@ -183,7 +183,7 @@ class Review { // eslint-disable-line no-unused-vars
         ['role', 'option'],
         ['value', option]]);
       li.innerHTML = option;
-      ul.append(li);
+      ul.appendChild(li);
     });
     selectContainer.appendChild(button);
     listbox.appendChild(ul);

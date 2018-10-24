@@ -24,7 +24,7 @@ const buildPictureEl = (restaurant, srcImgs) => { // eslint-disable-line no-unus
   const extension = img.split('.').slice(-1)[0];
   const srcsetImgs = srcImgs.slice(0, -1);
   for (const mg of srcsetImgs) {
-    pictureEl.append(
+    pictureEl.appendChild(
       createSourceEl(imgUrl, extension, mg.width1x, mg.width2x, mg.vpWidth, 'min-width')
     );
   }
@@ -37,7 +37,7 @@ const buildPictureEl = (restaurant, srcImgs) => { // eslint-disable-line no-unus
   const fallback = srcImgs.slice(-1)[0];
   addSrcset(imgEl, imgUrl, extension, fallback.width1x, fallback.width2x);
 
-  pictureEl.append(imgEl);
+  pictureEl.appendChild(imgEl);
 
   return pictureEl;
 };

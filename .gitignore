@@ -3,6 +3,9 @@
 # compiled output
 /img
 /dist
+.firebaserc
+firebase.json
+/.firebase
 
 # preconfigured server
 /server

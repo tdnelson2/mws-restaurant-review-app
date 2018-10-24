@@ -221,7 +221,7 @@ const fillCustomSelectBox = (items, listboxID, buttonID, ariaLblPrefix, callback
     li.setAttribute('role', 'option');
     li.setAttribute('value', item);
     li.innerHTML = item;
-    ul.append(li);
+    ul.appendChild(li);
   });
   new CustomSelect(button, listbox, ariaLblPrefix, callback);
 };
